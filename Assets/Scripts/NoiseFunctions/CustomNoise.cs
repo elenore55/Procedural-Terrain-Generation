@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
-public static class CustomNoise
+public class CustomNoise : GenericNoise
 {
-    public static float Generate(float x, float y)
+    public new float Generate(float x, float y)
     {
         float result = 0f;
         System.Random rnd;

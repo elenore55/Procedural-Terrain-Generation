@@ -1,13 +1,26 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public static class Noise
 {
 
     public enum NormalizeMode { Local, Global };
 
+    public static GenericNoise noiseFuntion
+    {
+        set
+        {
+            noiseFuntion = value;
+        }
+        get
+        {
+            return noiseFuntion;
+        }
+    }
+
+
     public static float[,] GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, float persistance, float lacunarity, Vector2 offset, NormalizeMode normalizeMode)
     {
+        // noiseFuntion = new PerlinNoiseFunction();
         float[,] noiseMap = new float[mapWidth, mapHeight];
 
         System.Random prng = new System.Random(seed);
@@ -53,7 +66,7 @@ public static class Noise
                     float sampleX = (x - halfWidth + octaveOffsets[i].x) / scale * frequency;
                     float sampleY = (y - halfHeight + octaveOffsets[i].y) / scale * frequency;
                     float perlinValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1;
-                    // float perlinValue = CustomNoise.Generate(sampleX, sampleY) * 2 - 1;
+                    // float perlinValue = noiseFuntion.Generate(sampleX, sampleY) * 2 - 1;
                     noiseHeight += perlinValue * amplitude;
 
                     amplitude *= persistance;

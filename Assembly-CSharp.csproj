@@ -68,8 +68,10 @@
     <Compile Include="Assets\Scripts\MapGenerator.cs" />
     <Compile Include="Assets\Scripts\MeshGenerator.cs" />
     <Compile Include="Assets\Scripts\NoiseFunctions\CustomNoise.cs" />
+    <Compile Include="Assets\Scripts\NoiseFunctions\GenericNoise.cs" />
     <Compile Include="Assets\Scripts\NoiseFunctions\Noise.cs" />
     <Compile Include="Assets\Scripts\NoiseFunctions\OpenSimplexNoise.cs" />
+    <Compile Include="Assets\Scripts\NoiseFunctions\PerlinNoiseFunction.cs" />
     <Compile Include="Assets\Scripts\RainCollision.cs" />
     <Compile Include="Assets\Scripts\RainMovement.cs" />
     <Compile Include="Assets\Scripts\TextureData.cs" />

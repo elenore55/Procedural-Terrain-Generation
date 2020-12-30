@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class EndlessTerrain : MonoBehaviour
 {
 
-    // const float scale = 2f;
     const float viewerMoveThresholdForChunkUpdate = 25f;
     const float sqrViewerMoveThresholdForChunkUpdate = viewerMoveThresholdForChunkUpdate * viewerMoveThresholdForChunkUpdate;
 
@@ -20,13 +20,60 @@ public class EndlessTerrain : MonoBehaviour
     Dictionary<Vector2, TerrainChunk> terrainChunkDictionary = new Dictionary<Vector2, TerrainChunk>();
     static List<TerrainChunk> terrainChunksVisibleLastUpdate = new List<TerrainChunk>();
 
+    Slider lacunaritySlider;
+    Slider persistanceSlider;
+    Slider octavesSlider;
+    Slider seedSlider;
+    Dropdown noiceChoice;
+
     void Start()
     {
         mapGenerator = FindObjectOfType<MapGenerator>();
+        InitializeSliders();
+        noiceChoice = GameObject.Find("Noises").GetComponent<Dropdown>();
+        noiceChoice.onValueChanged.AddListener(delegate { UpdateNoise(); });
+        mapGenerator.lacunarity = lacunaritySlider.value; 
         maxViewDst = detailLevels[detailLevels.Length - 1].visibleDstThreshold;
         chunkSize = MapGenerator.mapChunkSize - 1;
         chunksVisibleInViewDst = Mathf.RoundToInt(maxViewDst / chunkSize);
         UpdateVisibleChunks();
+    }
+
+    void InitializeSliders()
+    {
+        lacunaritySlider = GameObject.Find("Lacunarity").GetComponent<Slider>();
+        persistanceSlider = GameObject.Find("Persistance").GetComponent<Slider>();
+        octavesSlider = GameObject.Find("Octaves").GetComponent<Slider>();
+        seedSlider = GameObject.Find("Seed").GetComponent<Slider>();
+        lacunaritySlider.onValueChanged.AddListener(delegate { UpdateLacunarity(); });
+        persistanceSlider.onValueChanged.AddListener(delegate { UpdatePersistance(); });
+        octavesSlider.onValueChanged.AddListener(delegate { UpdateOctaves(); });
+        seedSlider.onValueChanged.AddListener(delegate { UpdateSeed(); });
+    }
+
+    private void UpdateLacunarity()
+    {
+        mapGenerator.lacunarity = lacunaritySlider.value;
+    }
+
+    private void UpdatePersistance()
+    {
+        mapGenerator.persistance = persistanceSlider.value;
+    }
+
+    private void UpdateOctaves()
+    {
+        mapGenerator.octaves = (int)octavesSlider.value;
+    }
+
+    private void UpdateSeed()
+    {
+        mapGenerator.octaves = (int)seedSlider.value;
+    }
+
+    private void UpdateNoise()
+    {
+        int chosen = noiceChoice.value;
     }
 
     void Update()
@@ -35,6 +82,7 @@ public class EndlessTerrain : MonoBehaviour
         if ((viewerPositionOld - viewerPosition).sqrMagnitude > sqrViewerMoveThresholdForChunkUpdate)
         {
             viewerPositionOld = viewerPosition;
+            Debug.Log("Lacunarity: " +  mapGenerator.lacunarity);
             UpdateVisibleChunks();
         }
     }
@@ -116,27 +164,26 @@ public class EndlessTerrain : MonoBehaviour
                 bool visible = viewerDstFromNearestEdge <= maxViewDst;
                 if (visible)
                 {
-                    int lodIndex = 0;
+                    int LODIndex = 0;
                     for (int i = 0; i < detailLevels.Length - 1; i++)
                     {
                         if (viewerDstFromNearestEdge > detailLevels[i].visibleDstThreshold)
-                            lodIndex = i + 1;
+                            LODIndex = i + 1;
                         else
                             break;
                     }
-                    if (lodIndex != previousLODIndex)
+                    if (LODIndex != previousLODIndex)
                     {
-                        LODMesh lodMesh = lodMeshes[lodIndex];
+                        LODMesh lodMesh = lodMeshes[LODIndex];
                         if (lodMesh.hasMesh)
                         {
-                            previousLODIndex = lodIndex;
+                            previousLODIndex = LODIndex;
                             meshFilter.mesh = lodMesh.mesh;
-                            // meshCollider.sharedMesh = lodMesh.mesh;
                         }
                         else if (!lodMesh.hasRequestedMesh)
                             lodMesh.RequestMesh(mapData);
                     }
-                    if (lodIndex == 0)
+                    if (LODIndex == 0)
                     {
                         if (collisionLODMesh.hasMesh)
                         {

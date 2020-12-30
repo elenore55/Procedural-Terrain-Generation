@@ -3,12 +3,10 @@
  * and heavily refactored to improve performance. */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 
-public class OpenSimplexNoise
+public class OpenSimplexNoise : GenericNoise
 {
     private const double STRETCH_2D = -0.211324865405187;    //(1/Math.sqrt(2+1)-1)/2;
     private const double STRETCH_3D = -1.0 / 6.0;            //(1/Math.sqrt(3+1)-1)/3;
@@ -225,7 +223,7 @@ public class OpenSimplexNoise
         }
     }
 
-    public double Evaluate(double x, double y)
+    public new float Generate(float x, float y)
     {
         var stretchOffset = (x + y) * STRETCH_2D;
         var xs = x + stretchOffset;
@@ -270,7 +268,7 @@ public class OpenSimplexNoise
             }
             c = c.Next;
         }
-        return value * NORM_2D;
+        return (float)(value * NORM_2D);
     }
 
     public double Evaluate(double x, double y, double z)
