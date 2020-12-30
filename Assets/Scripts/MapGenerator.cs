@@ -5,26 +5,16 @@ using System.Collections.Generic;
 
 public class MapGenerator : MonoBehaviour
 {
-    public enum DrawMode { NoiseMap, Mesh };
-    public DrawMode drawMode;
-    public Noise.NormalizeMode normalizeMode;
-    public const int mapChunkSize = 241;
-    [Range(0, 6)]
-    public int editorPreviewLOD;
+    public const int tileSize = 241;
     public float noiseScale;
     public int octaves;
-    [Range(0, 1)]
     public float persistance;
     public float lacunarity;
     public int seed;
     public Vector2 offset;
     public float meshHeightMultiplier;
     public AnimationCurve meshHeightCurve;
-    public bool autoUpdate;
     public Material terrainMaterial;
-    public Color[] baseColors;
-    [Range(0, 1)]
-    public float[] baseStartHeights;
     public TextureData textureData;
 
     Queue<MapThreadInfo<MapData>> mapDataThreadInfoQueue = new Queue<MapThreadInfo<MapData>>();
@@ -32,26 +22,17 @@ public class MapGenerator : MonoBehaviour
 
     public float minHeight
     {
-        get
-        {
-            return scale * meshHeightMultiplier * meshHeightCurve.Evaluate(0);
-        }
+        get { return scale * meshHeightMultiplier * meshHeightCurve.Evaluate(0); }
     }
 
     public float maxHeight
     {
-        get
-        {
-            return scale * meshHeightMultiplier * meshHeightCurve.Evaluate(1);
-        }
+        get { return scale * meshHeightMultiplier * meshHeightCurve.Evaluate(1); }
     }
 
     public float scale
     {
-        get
-        {
-            return 2f;
-        }
+        get { return 2f; }
     }
 
     void OnTextureValuesUpdated()
@@ -59,31 +40,17 @@ public class MapGenerator : MonoBehaviour
         textureData.ApplyToMaterial(terrainMaterial);
     }
 
-    public void DrawMapInEditor()
-    {
-        // textureData.UpdateMeshHeights(terrainMaterial, minHeight, maxHeight);
-        MapData mapData = GenerateMapData(Vector2.zero);
-        MapDisplay display = FindObjectOfType<MapDisplay>();
-        if (drawMode == DrawMode.NoiseMap)
-            display.DrawTexture(TextureGenerator.TextureFromHeightMap(mapData.heightMap));
-        else if (drawMode == DrawMode.Mesh)
-            display.DrawMesh(MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, editorPreviewLOD));
-    }
-
     private void Start()
     {
-        DrawMapInEditor();
         textureData.UpdateMeshHeights(terrainMaterial, minHeight, maxHeight);
     }
 
 
     public void RequestMapData(Vector2 centre, Action<MapData> callback)
     {
-        // textureData.UpdateMeshHeights(terrainMaterial, minHeight, maxHeight);
         ThreadStart threadStart = delegate {
             MapDataThread(centre, callback);
         };
-
         new Thread(threadStart).Start();
     }
 
@@ -106,7 +73,7 @@ public class MapGenerator : MonoBehaviour
 
     void MeshDataThread(MapData mapData, int lod, Action<MeshData> callback)
     {
-        MeshData meshData = MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, lod);
+        MeshData meshData = MeshGenerator.GenerateMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, lod);
         lock (meshDataThreadInfoQueue)
         {
             meshDataThreadInfoQueue.Enqueue(new MapThreadInfo<MeshData>(callback, meshData));
@@ -135,8 +102,7 @@ public class MapGenerator : MonoBehaviour
 
     MapData GenerateMapData(Vector2 centre)
     {
-        float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize, mapChunkSize, seed, noiseScale, octaves, persistance, lacunarity, centre + offset, normalizeMode);
-        // textureData.UpdateMeshHeights(terrainMaterial, minHeight, maxHeight;
+        float[,] noiseMap = Noise.GenerateNoiseMap(tileSize, seed, noiseScale, octaves, persistance, lacunarity, centre + offset);
         return new MapData(noiseMap);
     }
 
@@ -150,7 +116,6 @@ public class MapGenerator : MonoBehaviour
     {
         public readonly Action<T> callback;
         public readonly T parameter;
-
         public MapThreadInfo(Action<T> callback, T parameter)
         {
             this.callback = callback;
@@ -163,7 +128,6 @@ public class MapGenerator : MonoBehaviour
 public struct MapData
 {
     public readonly float[,] heightMap;
-
     public MapData(float[,] heightMap)
     {
         this.heightMap = heightMap;

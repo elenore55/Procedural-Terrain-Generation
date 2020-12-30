@@ -2,30 +2,30 @@
 
 public static class MeshGenerator
 {
-    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve _heightCurve, int levelOfDetail)
+    public static MeshData GenerateMesh(float[,] heightMap, float heightMultiplier, AnimationCurve curve, int levelOfDetail)
     {
-        AnimationCurve heightCurve = new AnimationCurve(_heightCurve.keys);
-        int width = heightMap.GetLength(0);
-        int height = heightMap.GetLength(1);
-        float topLeftX = (width - 1) / -2f;
-        float topLeftZ = (height - 1) / 2f;
+        AnimationCurve heightCurve = new AnimationCurve(curve.keys);
+        int size = heightMap.GetLength(0);
+        float topLeftX = (size - 1) / -2f;
+        float topLeftZ = (size - 1) / 2f;
 
-        int meshSimplificationIncrement = (levelOfDetail == 0) ? 1 : levelOfDetail * 2;
-        int verticesPerLine = (width - 1) / meshSimplificationIncrement + 1;
+        int simplification;
+        if (levelOfDetail == 0) simplification = 1;
+        else simplification = levelOfDetail * 2;
+        int verticesPerLine = (size - 1) / simplification + 1;
 
         MeshData meshData = new MeshData(verticesPerLine, verticesPerLine);
         int vertexIndex = 0;
 
-        for (int y = 0; y < height; y += meshSimplificationIncrement)
+        for (int y = 0; y < size; y += simplification)
         {
-            for (int x = 0; x < width; x += meshSimplificationIncrement)
+            for (int x = 0; x < size; x += simplification)
             {
                 float h = heightCurve.Evaluate(heightMap[x, y]) * heightMultiplier;
                 if (h < 0) h = 0;
                 meshData.vertices[vertexIndex] = new Vector3(topLeftX + x, h, topLeftZ - y);
-                meshData.uvs[vertexIndex] = new Vector2(x / (float)width, y / (float)height);
-
-                if (x < width - 1 && y < height - 1)
+                meshData.uvs[vertexIndex] = new Vector2(x / (float)size, y / (float)size);
+                if (x < size - 1 && y < size - 1)
                 {
                     meshData.AddTriangle(vertexIndex, vertexIndex + verticesPerLine + 1, vertexIndex + verticesPerLine);
                     meshData.AddTriangle(vertexIndex + verticesPerLine + 1, vertexIndex, vertexIndex + 1);
@@ -34,7 +34,6 @@ public static class MeshGenerator
             }
         }
         return meshData;
-
     }
 }
 
@@ -43,7 +42,6 @@ public class MeshData
     public Vector3[] vertices;
     public int[] triangles;
     public Vector2[] uvs;
-
     int triangleIndex;
 
     public MeshData(int meshWidth, int meshHeight)
@@ -70,5 +68,4 @@ public class MeshData
         mesh.RecalculateNormals();
         return mesh;
     }
-
 }
