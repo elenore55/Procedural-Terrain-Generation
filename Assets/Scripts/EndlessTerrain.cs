@@ -15,8 +15,8 @@ public class EndlessTerrain : MonoBehaviour
     static MapGenerator mapGenerator;
     int tileSize;
     int tilesVisibleInViewDst;
-    Dictionary<Vector2, TerrainTile> terrainTileDict = new Dictionary<Vector2, TerrainTile>();
-    static List<TerrainTile> terrainTilesVisibleLastUpdate = new List<TerrainTile>();
+    Dictionary<Vector2, Tile> terrainTileDict = new Dictionary<Vector2, Tile>();
+    static List<Tile> terrainTilesVisibleLastUpdate = new List<Tile>();
 
     Slider lacunaritySlider;
     Slider persistanceSlider;
@@ -98,12 +98,12 @@ public class EndlessTerrain : MonoBehaviour
                 if (terrainTileDict.ContainsKey(viewedTileCoord))
                     terrainTileDict[viewedTileCoord].UpdateTerrainChunk();
                 else
-                    terrainTileDict.Add(viewedTileCoord, new TerrainTile(viewedTileCoord, tileSize, detailLevels, transform, mapMaterial));
+                    terrainTileDict.Add(viewedTileCoord, new Tile(viewedTileCoord, tileSize, detailLevels, transform, mapMaterial));
             }
         }
     }
 
-    public class TerrainTile
+    public class Tile
     {
         GameObject meshObject;
         Vector2 position;
@@ -118,7 +118,7 @@ public class EndlessTerrain : MonoBehaviour
         bool mapDataReceived;
         int previousLODIndex = -1;
 
-        public TerrainTile(Vector2 coord, int size, LODInfo[] detailLevels, Transform parent, Material material)
+        public Tile(Vector2 coord, int size, LODInfo[] detailLevels, Transform parent, Material material)
         {
             this.detailLevels = detailLevels;
             position = coord * size;

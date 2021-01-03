@@ -45,7 +45,6 @@ public class MapGenerator : MonoBehaviour
         textureData.UpdateMeshHeights(terrainMaterial, minHeight, maxHeight);
     }
 
-
     public void RequestMapData(Vector2 centre, Action<MapData> callback)
     {
         ThreadStart threadStart = delegate {
@@ -104,12 +103,6 @@ public class MapGenerator : MonoBehaviour
     {
         float[,] noiseMap = Noise.GenerateNoiseMap(tileSize, seed, noiseScale, octaves, persistance, lacunarity, centre + offset);
         return new MapData(noiseMap);
-    }
-
-    void OnValidate()
-    {
-        if (lacunarity < 1) lacunarity = 1;
-        if (octaves < 0) octaves = 0;
     }
 
     struct MapThreadInfo<T>
