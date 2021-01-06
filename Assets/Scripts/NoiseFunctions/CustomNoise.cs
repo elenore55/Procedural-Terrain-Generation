@@ -2,9 +2,8 @@
 
 public class CustomNoise : GenericNoise
 {
-    public new float Generate(float x, float y)
+    public override float Generate(float x, float y)
     {
-        float result = 0f;
         System.Random rnd;
         int a = (int)x;
         int c = (int)y;
@@ -15,9 +14,9 @@ public class CustomNoise : GenericNoise
         float rd = rnd.Next();
         float u = x - (float)a;
         float v = y - (float)c;
-        float ix0 = Cosine(ra, rb, u);
-        float ix1 = Cosine(rc, rd, u);
-        result = Cosine(ix0, ix1, v);
+        float ix0 = SmoothStep(ra, rb, u);
+        float ix1 = Acceleration(rc, rd, u);
+        float result = Cosine(ix0, ix1, v);
         return result;
     }
 
@@ -49,11 +48,16 @@ public class CustomNoise : GenericNoise
 
     private static float Cosine(float y1, float y2, float p)
     {
-        return Interp1(y1, y2, (float)(-Mathf.Cos(Mathf.PI * p) / 2f + 0.5));
+        return Interp(y1, y2, (float)(-Mathf.Cos(Mathf.PI * p) / 2f + 0.5));
     }
 
     private static float Acceleration(float y1, float y2, float p)
     {
         return Interp1(y1, y2, p * p);
+    }
+
+    private static float Deceleration(float y1, float y2, float p)
+    {
+        return Interp(y1, y2, 1 - (1 - p) * (1 - p));
     }
 }

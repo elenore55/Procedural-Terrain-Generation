@@ -223,7 +223,7 @@ public class OpenSimplexNoise : GenericNoise
         }
     }
 
-    public new float Generate(float x, float y)
+    public override float Generate(float x, float y)
     {
         var stretchOffset = (x + y) * STRETCH_2D;
         var xs = x + stretchOffset;

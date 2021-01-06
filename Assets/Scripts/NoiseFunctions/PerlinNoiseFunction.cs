@@ -2,7 +2,7 @@
 
 public class PerlinNoiseFunction : GenericNoise
 {
-    public new float Generate(float a, float b)
+    public override float Generate(float a, float b)
     {
         return Mathf.PerlinNoise(a, b);
     }

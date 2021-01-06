@@ -65,12 +65,27 @@ public class EndlessTerrain : MonoBehaviour
 
     private void UpdateSeed()
     {
-        mapGenerator.octaves = (int)seedSlider.value;
+        mapGenerator.seed = (int)seedSlider.value;
     }
 
     private void UpdateNoise()
     {
         int chosen = noiseChoice.value;
+        switch (chosen)
+        {
+            case 0:
+                mapGenerator.noiseFunc = new PerlinNoiseFunction();
+                break;
+            case 1:
+                mapGenerator.noiseFunc = new OpenSimplexNoise();
+                break;
+            case 2:
+                mapGenerator.noiseFunc = new CustomNoise();
+                break;
+            default:
+                mapGenerator.noiseFunc = new PerlinNoiseFunction();
+                break;
+        }
     }
 
     void Update()

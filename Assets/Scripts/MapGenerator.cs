@@ -16,6 +16,7 @@ public class MapGenerator : MonoBehaviour
     public AnimationCurve meshHeightCurve;
     public Material terrainMaterial;
     public TextureData textureData;
+    public GenericNoise noiseFunc = new PerlinNoiseFunction();
 
     Queue<MapThreadInfo<MapData>> mapDataThreadInfoQueue = new Queue<MapThreadInfo<MapData>>();
     Queue<MapThreadInfo<MeshData>> meshDataThreadInfoQueue = new Queue<MapThreadInfo<MeshData>>();
@@ -101,7 +102,7 @@ public class MapGenerator : MonoBehaviour
 
     MapData GenerateMapData(Vector2 centre)
     {
-        float[,] noiseMap = Noise.GenerateNoiseMap(tileSize, seed, noiseScale, octaves, persistance, lacunarity, centre + offset);
+        float[,] noiseMap = Noise.GenerateNoiseMap(tileSize, seed, noiseScale, octaves, persistance, lacunarity, centre + offset, noiseFunc);
         return new MapData(noiseMap);
     }
 
