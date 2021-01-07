@@ -1,25 +1,27 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(ParticleSystem))]
 public class RainCollision : MonoBehaviour
 {
-
     public ParticleSystem rainSystem;
+    public List<ParticleCollisionEvent> collisionEvents;
 
     private void OnParticleCollision(GameObject other)
     {
-        Debug.Log("I collided");
+        int numCollisionEvents = rainSystem.GetCollisionEvents(other, collisionEvents);
+        for (int i = 0; i < numCollisionEvents; i++)
+        {
+            Vector3 pos = collisionEvents[i].intersection;
+        }
     }
 
-    // Start is called before the first frame update
     void Start()
     {
         rainSystem = FindObjectOfType<ParticleSystem>();
+        collisionEvents = new List<ParticleCollisionEvent>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         
