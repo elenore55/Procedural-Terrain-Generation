@@ -3494,7 +3494,7 @@ MonoBehaviour:
   m_MinValue: 1
   m_MaxValue: 10
   m_WholeNumbers: 1
-  m_Value: 5
+  m_Value: 6
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -4703,8 +4703,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1002740521}
-  - component: {fileID: 1002740520}
   - component: {fileID: 1002740522}
+  - component: {fileID: 1002740519}
   m_Layer: 0
   m_Name: Map Generator
   m_TagString: Untagged
@@ -4712,7 +4712,7 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1002740520
+--- !u!114 &1002740519
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4724,19 +4724,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f493a7c0442e8914697fe4e38b45e451, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  noiseScale: 25
-  octaves: 5
-  persistance: 0.504
+  noiseScale: 20
+  octaves: 6
+  persistance: 0.5
   lacunarity: 2
   seed: 0
-  offset: {x: -13.95, y: 0}
-  meshHeightMultiplier: 36.96
+  offset: {x: -5.66, y: 0}
+  meshHeightMultiplier: 33
   meshHeightCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0.10507965
-      value: 0.22592163
+      time: 0
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -4744,35 +4744,35 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.31967697
-      value: 0.2813685
-      inSlope: 0.36179402
-      outSlope: 0.36179402
+      time: 0.3960244
+      value: 0.1273674
+      inSlope: 0.55882555
+      outSlope: 0.55882555
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
-      outWeight: 0.56361645
+      outWeight: 0.12575342
     - serializedVersion: 3
-      time: 0.47273523
-      value: 0.34149522
-      inSlope: 0.40358794
-      outSlope: 0.40358794
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.13875541
-      outWeight: 0.11960606
-    - serializedVersion: 3
-      time: 0.5283178
-      value: 0.36962876
-      inSlope: 0.5364405
-      outSlope: 0.5364405
+      time: 0.6803278
+      value: 0.41013587
+      inSlope: 1.1989127
+      outSlope: 1.1989127
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
-      outWeight: 0.13797902
+      outWeight: 0.16543417
     - serializedVersion: 3
-      time: 1.0288086
-      value: 1.0550499
+      time: 0.89375365
+      value: 0.74584484
+      inSlope: 1.6377553
+      outSlope: 1.6377553
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.37539497
+    - serializedVersion: 3
+      time: 1.0462646
+      value: 1.0465393
       inSlope: 2
       outSlope: 2
       tangentMode: 0
@@ -4813,13 +4813,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   detailLevels:
   - LOD: 0
-    visibleDstThreshold: 100
+    visibleDistThreshold: 150
     useForCollider: 1
   - LOD: 1
-    visibleDstThreshold: 250
+    visibleDistThreshold: 350
     useForCollider: 0
   - LOD: 3
-    visibleDstThreshold: 400
+    visibleDistThreshold: 400
     useForCollider: 0
   mapMaterial: {fileID: 2100000, guid: 6f8ce5e5fbf72494ebad718d8d231280, type: 2}
 --- !u!1 &1010366491
@@ -12726,7 +12726,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 2472871}
   m_Direction: 0
   m_MinValue: 1
-  m_MaxValue: 13
+  m_MaxValue: 7
   m_WholeNumbers: 0
   m_Value: 2
   m_OnValueChanged:

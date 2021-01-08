@@ -2,7 +2,7 @@
 using System.Linq;
 
 [CreateAssetMenu()]
-public class TextureData : UpdatableData
+public class TextureData : ScriptableObject
 {
     const int textureSize = 512;
     const TextureFormat textureFormat = TextureFormat.RGB565;

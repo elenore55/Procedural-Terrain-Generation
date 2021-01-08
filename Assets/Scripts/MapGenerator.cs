@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Collections.Generic;
 
+[Serializable]
 public class MapGenerator : MonoBehaviour
 {
     public const int tileSize = 241;
@@ -101,7 +102,7 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    float[,] GenerateHeightMap(Vector2 centre)
+    public float[,] GenerateHeightMap(Vector2 centre)
     {
         float[,] noiseMap = Noise.GenerateNoiseMap(tileSize, seed, noiseScale, octaves, persistance, lacunarity, centre + offset, noiseFunc);
         if (rains) Debug.Log("Rains");

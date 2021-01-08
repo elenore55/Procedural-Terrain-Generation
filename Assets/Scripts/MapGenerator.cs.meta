@@ -3,7 +3,9 @@ guid: f493a7c0442e8914697fe4e38b45e451
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - terrainMaterial: {instanceID: 0}
+  - textureData: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
