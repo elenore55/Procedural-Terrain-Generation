@@ -11,7 +11,7 @@
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <RootNamespace></RootNamespace>
-    <ProjectGuid>{E1BAB358-ECE8-9022-EF6D-1460A4705FBE}</ProjectGuid>
+    <ProjectGuid>{B75C67B7-0E72-1D3C-4562-5E489AB882B5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AssemblyName>Assembly-CSharp</AssemblyName>
@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\CameraMovement.cs" />
     <Compile Include="Assets\Scripts\InfiniteTerrain.cs" />
+    <Compile Include="Assets\Scripts\MapDisplay.cs" />
     <Compile Include="Assets\Scripts\MapGenerator.cs" />
     <Compile Include="Assets\Scripts\MeshGenerator.cs" />
     <Compile Include="Assets\Scripts\NoiseFunctions\CustomNoise.cs" />
@@ -76,6 +77,7 @@
     <Compile Include="Assets\Scripts\RainMovement.cs" />
     <Compile Include="Assets\Scripts\TerrainErosion.cs" />
     <Compile Include="Assets\Scripts\TextureData.cs" />
+    <Compile Include="Assets\Scripts\TextureGenerator.cs" />
     <Compile Include="Assets\Scripts\UpdateableData.cs" />
     <None Include="Assets\Scripts\TerrainSurfaceShader.shader" />
     <Reference Include="UnityEngine">
@@ -616,31 +618,31 @@
       <HintPath>D:/Unity/2019.4.15f1/Editor/Data/MonoBleedingEdge/lib/mono/unityscript/Boo.Lang.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Timeline.Editor">
-      <HintPath>D:/Unity/Projects/Terrain/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
+      <HintPath>C:/Users/Milica/Desktop/procedural-terrain/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.VSCode.Editor">
-      <HintPath>D:/Unity/Projects/Terrain/Library/ScriptAssemblies/Unity.VSCode.Editor.dll</HintPath>
+      <HintPath>C:/Users/Milica/Desktop/procedural-terrain/Library/ScriptAssemblies/Unity.VSCode.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro.Editor">
-      <HintPath>D:/Unity/Projects/Terrain/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
+      <HintPath>C:/Users/Milica/Desktop/procedural-terrain/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>D:/Unity/Projects/Terrain/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
+      <HintPath>C:/Users/Milica/Desktop/procedural-terrain/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Timeline">
-      <HintPath>D:/Unity/Projects/Terrain/Library/ScriptAssemblies/Unity.Timeline.dll</HintPath>
+      <HintPath>C:/Users/Milica/Desktop/procedural-terrain/Library/ScriptAssemblies/Unity.Timeline.dll</HintPath>
     </Reference>
     <Reference Include="Unity.CollabProxy.Editor">
-      <HintPath>D:/Unity/Projects/Terrain/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
+      <HintPath>C:/Users/Milica/Desktop/procedural-terrain/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Rider.Editor">
-      <HintPath>D:/Unity/Projects/Terrain/Library/ScriptAssemblies/Unity.Rider.Editor.dll</HintPath>
+      <HintPath>C:/Users/Milica/Desktop/procedural-terrain/Library/ScriptAssemblies/Unity.Rider.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>D:/Unity/Projects/Terrain/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
+      <HintPath>C:/Users/Milica/Desktop/procedural-terrain/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
     </Reference>
     <Reference Include="UnityEditor.UI">
-      <HintPath>D:/Unity/Projects/Terrain/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
+      <HintPath>C:/Users/Milica/Desktop/procedural-terrain/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup></ItemGroup>
