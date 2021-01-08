@@ -4,24 +4,26 @@ public class CustomNoise : GenericNoise
 {
     public override float Generate(float x, float y)
     {
-        System.Random rnd;
-        int a = (int)x;
-        int c = (int)y;
-        rnd = new System.Random(a + c * 45);
-        float ra = rnd.Next();
-        float rb = rnd.Next();
-        float rc = rnd.Next();
-        float rd = rnd.Next();
-        float u = x - (float)a;
-        float v = y - (float)c;
-        float ix0 = SmoothStep(ra, rb, u);
-        float ix1 = Acceleration(rc, rd, u);
-        float result = Cosine(ix0, ix1, v);
-        return result;
+        float ix = (int)x;
+        float fx = x - ix;
+        float iy = (int)y;
+        float fy = y - iy;
+  
+        Vector2 iV = new Vector2(ix, iy);
+        Vector2 fV = new Vector2(fx, fy);
+
+        float a = myRandom(iV);
+        float b = myRandom(iV + new Vector2(1, 0));
+        float c = myRandom(iV + new Vector2(0, 1));
+        float d = myRandom(iV + new Vector2(1, 1));
+
+        float ix0 = Acceleration(a, b, fx);
+        float ix1 = Acceleration(c, d, fx);
+        float result = Acceleration(ix0, ix1, fy);
+        return result; 
     }
 
-    // float hash(float p) { p = fract(p * 0.011); p *= p + 7.5; p *= p + p; return fract(p); }
-    private static float Rand(float p)
+    private float Rand(float p)
     {
         p = p * 0.011f - (int)p;
         p *= p + 7.5f;
@@ -29,35 +31,59 @@ public class CustomNoise : GenericNoise
         return p - (int)p;
     }
 
-    private static float Interp(float x, float y, float t)
+    private float Linear(float x, float y, float t)
     {
-        return x * (1 - t) + y * t;
+        return x + t * (y - x);
     }
 
-    private static float Interp1(float y1, float y2, float p)
+    private float SmoothStep(float x, float y, float t)
     {
-        float n = y1;
-        float k = y2 - y1;
-        return k * p + n;
+        return Linear(x, y, t * t * (3 - 2 * t));
     }
 
-    private static float SmoothStep(float y1, float y2, float p)
+    private float Step(float x, float y, float t)
     {
-        return Interp1(y1, y2, p * p * (3 - 2 * p));
+        if (t < 0.5f) return x;
+        return y;
     }
 
-    private static float Cosine(float y1, float y2, float p)
+    private float Cosine(float x, float y, float t)
     {
-        return Interp(y1, y2, (float)(-Mathf.Cos(Mathf.PI * p) / 2f + 0.5));
+        return Linear(x, y, (float)(-Mathf.Cos(Mathf.PI * t) / 2f + 0.5));
     }
 
-    private static float Acceleration(float y1, float y2, float p)
+    private float Acceleration(float x, float y, float t)
     {
-        return Interp1(y1, y2, p * p);
+        return Linear(x, y, t * t);
     }
 
-    private static float Deceleration(float y1, float y2, float p)
+    private float Deceleration(float x, float y, float t)
     {
-        return Interp(y1, y2, 1 - (1 - p) * (1 - p));
+        return Linear(x, y, 1 - (1 - t) * (1 - t));
+    }
+
+    float clamp(float x, float lowerlimit, float upperlimit)
+    {
+        if (x < lowerlimit)
+            x = lowerlimit;
+        if (x > upperlimit)
+            x = upperlimit;
+        return x;
+    }
+
+    float myRandom(Vector2 v)
+    {
+        Vector2 other = new Vector2(12.9898f, 78.233f);
+        return fract(Mathf.Sin(Dot(v, other)) * 43758.5453123f);
+    }
+
+    float fract(float x)
+    {
+        return x - (int)x;
+    }
+
+    float Dot(Vector2 v1, Vector2 v2)
+    {
+        return v1.x * v2.x + v1.y * v2.y;
     }
 }

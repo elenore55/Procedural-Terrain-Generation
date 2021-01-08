@@ -17,8 +17,9 @@ public class MapGenerator : MonoBehaviour
     public Material terrainMaterial;
     public TextureData textureData;
     public GenericNoise noiseFunc = new PerlinNoiseFunction();
+    public bool rains = false;
 
-    Queue<MapThreadInfo<MapData>> mapDataThreadInfoQueue = new Queue<MapThreadInfo<MapData>>();
+    Queue<MapThreadInfo<float[,]>> heightMapThreadInfoQueue = new Queue<MapThreadInfo<float[,]>>();
     Queue<MapThreadInfo<MeshData>> meshDataThreadInfoQueue = new Queue<MapThreadInfo<MeshData>>();
 
     public float minHeight
@@ -46,34 +47,34 @@ public class MapGenerator : MonoBehaviour
         textureData.UpdateMeshHeights(terrainMaterial, minHeight, maxHeight);
     }
 
-    public void RequestMapData(Vector2 centre, Action<MapData> callback)
+    public void RequestHeightMap(Vector2 centre, Action<float[,]> callback)
     {
         ThreadStart threadStart = delegate {
-            MapDataThread(centre, callback);
+            HeightMapThread(centre, callback);
         };
         new Thread(threadStart).Start();
     }
 
-    void MapDataThread(Vector2 centre, Action<MapData> callback)
+    void HeightMapThread(Vector2 centre, Action<float[,]> callback)
     {
-        MapData mapData = GenerateMapData(centre);
-        lock (mapDataThreadInfoQueue)
+        float[,] heightMap = GenerateHeightMap(centre);
+        lock (heightMapThreadInfoQueue)
         {
-            mapDataThreadInfoQueue.Enqueue(new MapThreadInfo<MapData>(callback, mapData));
+            heightMapThreadInfoQueue.Enqueue(new MapThreadInfo<float[,]>(callback, heightMap));
         }
     }
 
-    public void RequestMeshData(MapData mapData, int lod, Action<MeshData> callback)
+    public void RequestHeightMap(float[,] heightMap, int lod, Action<MeshData> callback)
     {
         ThreadStart threadStart = delegate {
-            MeshDataThread(mapData, lod, callback);
+            MeshDataThread(heightMap, lod, callback);
         };
         new Thread(threadStart).Start();
     }
 
-    void MeshDataThread(MapData mapData, int lod, Action<MeshData> callback)
+    void MeshDataThread(float[,] heightMap, int lod, Action<MeshData> callback)
     {
-        MeshData meshData = MeshGenerator.GenerateMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, lod);
+        MeshData meshData = MeshGenerator.GenerateMesh(heightMap, meshHeightMultiplier, meshHeightCurve, lod);
         lock (meshDataThreadInfoQueue)
         {
             meshDataThreadInfoQueue.Enqueue(new MapThreadInfo<MeshData>(callback, meshData));
@@ -82,11 +83,11 @@ public class MapGenerator : MonoBehaviour
 
     void Update()
     {
-        if (mapDataThreadInfoQueue.Count > 0)
+        if (heightMapThreadInfoQueue.Count > 0)
         {
-            for (int i = 0; i < mapDataThreadInfoQueue.Count; i++)
+            for (int i = 0; i < heightMapThreadInfoQueue.Count; i++)
             {
-                MapThreadInfo<MapData> threadInfo = mapDataThreadInfoQueue.Dequeue();
+                MapThreadInfo<float[,]> threadInfo = heightMapThreadInfoQueue.Dequeue();
                 threadInfo.callback(threadInfo.parameter);
             }
         }
@@ -100,10 +101,11 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    MapData GenerateMapData(Vector2 centre)
+    float[,] GenerateHeightMap(Vector2 centre)
     {
         float[,] noiseMap = Noise.GenerateNoiseMap(tileSize, seed, noiseScale, octaves, persistance, lacunarity, centre + offset, noiseFunc);
-        return new MapData(noiseMap);
+        if (rains) Debug.Log("Rains");
+        return noiseMap;
     }
 
     struct MapThreadInfo<T>
@@ -115,15 +117,5 @@ public class MapGenerator : MonoBehaviour
             this.callback = callback;
             this.parameter = parameter;
         }
-    }
-}
-
-
-public struct MapData
-{
-    public readonly float[,] heightMap;
-    public MapData(float[,] heightMap)
-    {
-        this.heightMap = heightMap;
     }
 }

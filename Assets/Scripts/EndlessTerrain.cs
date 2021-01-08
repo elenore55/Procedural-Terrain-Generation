@@ -129,8 +129,8 @@ public class EndlessTerrain : MonoBehaviour
         LODInfo[] detailLevels;
         LevelOfDetailMesh[] LODMeshes;
         LevelOfDetailMesh collisionLODMesh;
-        MapData mapData;
-        bool mapDataReceived;
+        float[,] mapData;
+        bool heightMapReceived;
         int previousLODIndex = -1;
 
         public Tile(Vector2 coord, int size, LODInfo[] detailLevels, Transform parent, Material material)
@@ -157,19 +157,19 @@ public class EndlessTerrain : MonoBehaviour
                     collisionLODMesh = LODMeshes[i];
                 }
             }
-            mapGenerator.RequestMapData(position, OnMapDataReceived);
+            mapGenerator.RequestHeightMap(position, OnMapDataReceived);
         }
 
-        void OnMapDataReceived(MapData mapData)
+        void OnMapDataReceived(float[,] mapData)
         {
             this.mapData = mapData;
-            mapDataReceived = true;
+            heightMapReceived = true;
             UpdateTerrainChunk();
         }
 
         public void UpdateTerrainChunk()
         {
-            if (mapDataReceived)
+            if (heightMapReceived)
             {
                 float viewerDstFromNearestEdge = Mathf.Sqrt(bounds.SqrDistance(cameraPos));
                 bool visible = viewerDstFromNearestEdge <= maxViewDst;
@@ -180,8 +180,7 @@ public class EndlessTerrain : MonoBehaviour
                     {
                         if (viewerDstFromNearestEdge > detailLevels[i].visibleDstThreshold)
                             LODIndex = i + 1;
-                        else
-                            break;
+                        else break;
                     }
                     if (LODIndex != previousLODIndex)
                     {
@@ -238,10 +237,10 @@ public class EndlessTerrain : MonoBehaviour
             updateCallback();
         }
 
-        public void RequestMesh(MapData mapData)
+        public void RequestMesh(float[,] heigthMap)
         {
             hasRequestedMesh = true;
-            mapGenerator.RequestMeshData(mapData, LOD, OnMeshDataReceived);
+            mapGenerator.RequestHeightMap(heigthMap, LOD, OnMeshDataReceived);
         }
     }
 

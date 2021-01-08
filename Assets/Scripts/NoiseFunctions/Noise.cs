@@ -37,7 +37,6 @@ public static class Noise
                 {
                     float sampleX = (x - mapSize / 2f + octaveOffsets[i].x) / scale * frequency;
                     float sampleY = (y - mapSize / 2f + octaveOffsets[i].y) / scale * frequency;
-                    // float perlinValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1;
                     float perlinValue = noiseFunc.Generate(sampleX, sampleY) * 2 - 1;
                     noiseHeight += perlinValue * amplitude;
                     amplitude *= persistance;
@@ -54,9 +53,11 @@ public static class Noise
         {
             for (int x = 0; x < mapSize; x++)
             {
-                float normalizedHeight = (noiseMap[x, y] + 1) / (maxHeight / 0.9f);
+                float normalizedHeight = (noiseMap[x, y] + 1) / (maxHeight / 0.9f); 
                 // noiseMap[x, y] = Mathf.Clamp(normalizedHeight, 0, int.MaxValue);
+                // noiseMap[x, y] = Mathf.Clamp(normalizedHeight, minH, maxH);
                 noiseMap[x, y] = Mathf.InverseLerp(minH, maxH, noiseMap[x, y]);
+                // noiseMap[x, y] = Mathf.InverseLerp(0, normalizedHeight, noiseMap[x, y]);
             }
         }
         return noiseMap;
