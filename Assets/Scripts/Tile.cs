@@ -2,6 +2,9 @@
 
 public class Tile
 {
+    float[,] heightMap;
+    bool heightMapReceived;
+    int previousLODIndex = -1;
     GameObject meshObject;
     Vector2 position;
     Bounds bounds;
@@ -11,9 +14,6 @@ public class Tile
     LODInfo[] detailLevels;
     LevelOfDetailMesh[] LODMeshes;
     LevelOfDetailMesh collisionLODMesh;
-    float[,] heightMap;
-    bool heightMapReceived;
-    int previousLODIndex = -1;
 
     public Tile(Vector2 coord, int size, LODInfo[] detailLevels, Transform parent, Material material)
     {
