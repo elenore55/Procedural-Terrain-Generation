@@ -104,8 +104,7 @@ public class MapGenerator : MonoBehaviour
 
     public float[,] GenerateHeightMap(Vector2 centre)
     {
-        float[,] noiseMap = Noise.GenerateNoiseMap(tileSize, seed, noiseScale, octaves, persistance, lacunarity, centre + offset, noiseFunc);
-        if (rains) Debug.Log("Rains");
+        float[,] noiseMap = Noise.GenerateHeightMap(tileSize, seed, noiseScale, octaves, persistance, lacunarity, centre + offset, noiseFunc);
         return noiseMap;
     }
 

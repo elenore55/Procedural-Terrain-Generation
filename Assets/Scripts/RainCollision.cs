@@ -25,9 +25,4 @@ public class RainCollision : MonoBehaviour
         if (droplets == null || droplets.Length < rainSystem.main.maxParticles)
             droplets = new ParticleSystem.Particle[rainSystem.main.maxParticles];
     }
-
-    void Update()
-    {
-        
-    }
 }

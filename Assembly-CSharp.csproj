@@ -74,7 +74,6 @@
     <Compile Include="Assets\Scripts\NoiseFunctions\PerlinNoiseFunction.cs" />
     <Compile Include="Assets\Scripts\RainCollision.cs" />
     <Compile Include="Assets\Scripts\RainMovement.cs" />
-    <Compile Include="Assets\Scripts\TerrainErosion.cs" />
     <Compile Include="Assets\Scripts\TextureData.cs" />
     <Compile Include="Assets\Scripts\Tile.cs" />
     <None Include="Assets\Scripts\TerrainSurfaceShader.shader" />

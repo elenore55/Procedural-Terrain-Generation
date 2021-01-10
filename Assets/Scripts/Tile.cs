@@ -21,7 +21,6 @@ public class Tile
         position = coord * size;
         bounds = new Bounds(position, Vector2.one * size);
         MeshObjectInit(parent, material);
-        // SetVisible(false);
         LODMeshesInit();
         InfiniteTerrain.mapGenerator.RequestHeightMap(position, OnMapDataReceived);
     }

@@ -4724,12 +4724,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f493a7c0442e8914697fe4e38b45e451, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  noiseScale: 20
+  noiseScale: 27
   octaves: 6
   persistance: 0.5
   lacunarity: 2
   seed: 0
-  offset: {x: -5.66, y: 0}
+  offset: {x: 0, y: 0}
   meshHeightMultiplier: 33
   meshHeightCurve:
     serializedVersion: 2
@@ -10301,7 +10301,7 @@ GameObject:
   - component: {fileID: 1321355135}
   - component: {fileID: 1321355134}
   m_Layer: 5
-  m_Name: SeedLabel
+  m_Name: ScaleLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10358,7 +10358,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Seed
+  m_Text: Noise Scale
 --- !u!222 &1321355135
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -12003,7 +12003,7 @@ GameObject:
   - component: {fileID: 1653711272}
   - component: {fileID: 1653711273}
   m_Layer: 5
-  m_Name: Seed
+  m_Name: Scale
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12074,10 +12074,10 @@ MonoBehaviour:
   m_FillRect: {fileID: 2041035668}
   m_HandleRect: {fileID: 1592291532}
   m_Direction: 0
-  m_MinValue: 0
-  m_MaxValue: 130
+  m_MinValue: 10
+  m_MaxValue: 50
   m_WholeNumbers: 0
-  m_Value: 0
+  m_Value: 27
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []

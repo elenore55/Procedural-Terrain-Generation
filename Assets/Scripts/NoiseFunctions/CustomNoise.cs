@@ -1,13 +1,18 @@
 ﻿using UnityEngine;
+using System;
 
 public class CustomNoise : GenericNoise
 {
+    public Func<float, float, float, float> Callback;
+
     public override float Generate(float x, float y)
     {
+        if (Callback == null)
+            Callback = Cosine;
         float ix = (int)x;
-        float fx = x - ix;
+        float fx = Fract(x);
         float iy = (int)y;
-        float fy = y - iy;
+        float fy = Fract(y);
   
         Vector2 iV = new Vector2(ix, iy);
         Vector2 fV = new Vector2(fx, fy);
@@ -17,26 +22,18 @@ public class CustomNoise : GenericNoise
         float c = myRandom(iV + new Vector2(0, 1));
         float d = myRandom(iV + new Vector2(1, 1));
 
-        float ix0 = Acceleration(a, b, fx);
-        float ix1 = Acceleration(c, d, fx);
-        float result = Acceleration(ix0, ix1, fy);
+        float x1 = Callback(a, b, fx);
+        float x2 = Callback(c, d, fx);
+        float result = Callback(x1, x2, fy);
         return result; 
     }
 
-    private float Rand(float p)
-    {
-        p = p * 0.011f - (int)p;
-        p *= p + 7.5f;
-        p *= p + p;
-        return p - (int)p;
-    }
-
-    private float Linear(float x, float y, float t)
+    public float Linear(float x, float y, float t)
     {
         return x + t * (y - x);
     }
 
-    private float SmoothStep(float x, float y, float t)
+    public float SmoothStep(float x, float y, float t)
     {
         return Linear(x, y, t * t * (3 - 2 * t));
     }
@@ -47,37 +44,28 @@ public class CustomNoise : GenericNoise
         return y;
     }
 
-    private float Cosine(float x, float y, float t)
+    public float Cosine(float x, float y, float t)
     {
         return Linear(x, y, (float)(-Mathf.Cos(Mathf.PI * t) / 2f + 0.5));
     }
 
-    private float Acceleration(float x, float y, float t)
+    public float Acceleration(float x, float y, float t)
     {
         return Linear(x, y, t * t);
     }
 
-    private float Deceleration(float x, float y, float t)
+    public float Deceleration(float x, float y, float t)
     {
         return Linear(x, y, 1 - (1 - t) * (1 - t));
-    }
-
-    float clamp(float x, float lowerlimit, float upperlimit)
-    {
-        if (x < lowerlimit)
-            x = lowerlimit;
-        if (x > upperlimit)
-            x = upperlimit;
-        return x;
     }
 
     float myRandom(Vector2 v)
     {
         Vector2 other = new Vector2(12.9898f, 78.233f);
-        return fract(Mathf.Sin(Dot(v, other)) * 43758.5453123f);
+        return Fract(Mathf.Sin(Dot(v, other)) * 43758.5453123f);
     }
 
-    float fract(float x)
+    float Fract(float x)
     {
         return x - (int)x;
     }

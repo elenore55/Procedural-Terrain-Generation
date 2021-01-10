@@ -20,7 +20,7 @@ public class InfiniteTerrain : MonoBehaviour
     Slider lacunaritySlider;
     Slider persistanceSlider;
     Slider octavesSlider;
-    Slider seedSlider;
+    Slider scaleSlider;
     Dropdown noiseChoice;
     Dropdown interpChoice;
 
@@ -40,11 +40,11 @@ public class InfiniteTerrain : MonoBehaviour
         lacunaritySlider = GameObject.Find("Lacunarity").GetComponent<Slider>();
         persistanceSlider = GameObject.Find("Persistance").GetComponent<Slider>();
         octavesSlider = GameObject.Find("Octaves").GetComponent<Slider>();
-        seedSlider = GameObject.Find("Seed").GetComponent<Slider>();
+        scaleSlider = GameObject.Find("Scale").GetComponent<Slider>();
         lacunaritySlider.onValueChanged.AddListener(delegate { UpdateLacunarity(); });
         persistanceSlider.onValueChanged.AddListener(delegate { UpdatePersistance(); });
         octavesSlider.onValueChanged.AddListener(delegate { UpdateOctaves(); });
-        seedSlider.onValueChanged.AddListener(delegate { UpdateSeed(); });
+        scaleSlider.onValueChanged.AddListener(delegate { UpdateSeed(); });
     }
 
     private void DropdownsInit()
@@ -73,7 +73,7 @@ public class InfiniteTerrain : MonoBehaviour
 
     private void UpdateSeed()
     {
-        mapGenerator.seed = (int)seedSlider.value;
+        mapGenerator.noiseScale = scaleSlider.value;
     }
 
     private void UpdateNoise()
@@ -88,6 +88,7 @@ public class InfiniteTerrain : MonoBehaviour
                 mapGenerator.noiseFunc = new OpenSimplexNoise();
                 break;
             case 2:
+                CustomNoise cn = new CustomNoise();
                 mapGenerator.noiseFunc = new CustomNoise();
                 break;
             default:
@@ -99,6 +100,26 @@ public class InfiniteTerrain : MonoBehaviour
     private void UpdateInterp()
     {
         int chosen = interpChoice.value;
+        CustomNoise cn = new CustomNoise();
+        switch(chosen)
+        {
+            case 0:
+                cn.Callback = cn.Cosine;
+                break;
+            case 1:
+                cn.Callback = cn.Acceleration;
+                break;
+            case 2:
+                cn.Callback = cn.SmoothStep;
+                break;
+            case 3:
+                cn.Callback = cn.Deceleration;
+                break;
+            case 4:
+                cn.Callback = cn.Linear;
+                break;
+        }
+        mapGenerator.noiseFunc = cn;
     }
 
     void Update()
