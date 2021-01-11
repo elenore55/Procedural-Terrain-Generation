@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 
+
 public class InfiniteTerrain : MonoBehaviour
 {
     const float squareCameraMoveThreshold = 625f;
@@ -12,9 +13,9 @@ public class InfiniteTerrain : MonoBehaviour
 
     Vector2 cameraPosOld;
     public static MapGenerator mapGenerator;
-    int tileSize;
+    public int tileSize;
     int tilesVisibleDist;
-    Dictionary<Vector2, Tile> terrainTileDict = new Dictionary<Vector2, Tile>();
+    public Dictionary<Vector2, Tile> terrainTileDict = new Dictionary<Vector2, Tile>();
     public static List<Tile> tilesVisibleLastUpdate = new List<Tile>();
 
     Slider lacunaritySlider;
@@ -41,6 +42,7 @@ public class InfiniteTerrain : MonoBehaviour
         persistanceSlider = GameObject.Find("Persistance").GetComponent<Slider>();
         octavesSlider = GameObject.Find("Octaves").GetComponent<Slider>();
         scaleSlider = GameObject.Find("Scale").GetComponent<Slider>();
+        // Azurira se pri generisanju novih blokova terena
         lacunaritySlider.onValueChanged.AddListener(delegate { UpdateLacunarity(); });
         persistanceSlider.onValueChanged.AddListener(delegate { UpdatePersistance(); });
         octavesSlider.onValueChanged.AddListener(delegate { UpdateOctaves(); });
@@ -63,7 +65,6 @@ public class InfiniteTerrain : MonoBehaviour
     private void UpdatePersistance()
     {
         mapGenerator.persistance = persistanceSlider.value;
-        UpdateTiles();
     }
 
     private void UpdateOctaves()
@@ -81,13 +82,13 @@ public class InfiniteTerrain : MonoBehaviour
         int chosen = noiseChoice.value;
         switch (chosen)
         {
-            case 0:
+            case (int)NoiseIndices.Perlin:
                 mapGenerator.noiseFunc = new PerlinNoiseFunction();
                 break;
-            case 1:
+            case (int)NoiseIndices.OpenSimplex:
                 mapGenerator.noiseFunc = new OpenSimplexNoise();
                 break;
-            case 2:
+            case (int)NoiseIndices.Custom:
                 CustomNoise cn = new CustomNoise();
                 mapGenerator.noiseFunc = new CustomNoise();
                 break;
@@ -99,23 +100,24 @@ public class InfiniteTerrain : MonoBehaviour
 
     private void UpdateInterp()
     {
+        noiseChoice.SetValueWithoutNotify((int)NoiseIndices.Custom);
         int chosen = interpChoice.value;
         CustomNoise cn = new CustomNoise();
         switch(chosen)
         {
-            case 0:
+            case (int)InterpIndices.Cosine:
                 cn.Callback = cn.Cosine;
                 break;
-            case 1:
+            case (int)InterpIndices.Acceleration:
                 cn.Callback = cn.Acceleration;
                 break;
-            case 2:
+            case (int)InterpIndices.Smoothstep:
                 cn.Callback = cn.SmoothStep;
                 break;
-            case 3:
+            case (int)InterpIndices.Deceleration:
                 cn.Callback = cn.Deceleration;
                 break;
-            case 4:
+            case (int)InterpIndices.Linear:
                 cn.Callback = cn.Linear;
                 break;
         }
@@ -147,7 +149,11 @@ public class InfiniteTerrain : MonoBehaviour
                 if (terrainTileDict.ContainsKey(viewedTileCoord))
                     terrainTileDict[viewedTileCoord].UpdateTile();
                 else
-                    terrainTileDict.Add(viewedTileCoord, new Tile(viewedTileCoord, tileSize, detailLevels, transform, mapMaterial));
+                {
+                    Tile t = new Tile(viewedTileCoord, tileSize, detailLevels, transform, mapMaterial);
+                    terrainTileDict.Add(viewedTileCoord, t);
+                }
+                    
             }
         }
     }

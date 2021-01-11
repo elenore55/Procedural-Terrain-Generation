@@ -35,13 +35,8 @@ public class CustomNoise : GenericNoise
 
     public float SmoothStep(float x, float y, float t)
     {
-        return Linear(x, y, t * t * (3 - 2 * t));
-    }
-
-    private float Step(float x, float y, float t)
-    {
-        if (t < 0.5f) return x;
-        return y;
+        float m = t * t * (3 - 2 * t);
+        return Linear(x, y, m);
     }
 
     public float Cosine(float x, float y, float t)

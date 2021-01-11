@@ -39,7 +39,7 @@ public class Tile
     void MeshObjectInit(Transform parent, Material material)
     {
         Vector3 position3D = new Vector3(position.x, 0, position.y);
-        meshObject = new GameObject("Terrain Chunk");
+        meshObject = new GameObject();
         meshFilter = meshObject.AddComponent<MeshFilter>();
         meshRenderer = meshObject.AddComponent<MeshRenderer>();
         meshCollider = meshObject.AddComponent<MeshCollider>();
@@ -49,7 +49,7 @@ public class Tile
         meshObject.transform.localScale = Vector3.one * InfiniteTerrain.mapGenerator.scale;
     }
 
-    void OnMapDataReceived(float[,] heightMap)
+    public void OnMapDataReceived(float[,] heightMap)
     {
         this.heightMap = heightMap;
         heightMapReceived = true;

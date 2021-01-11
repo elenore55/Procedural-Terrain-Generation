@@ -7,14 +7,12 @@ public class RainMovement : MonoBehaviour
     private Button btnRain;
     private bool play = false;
     private Slider gravitySlider;
-    private MapGenerator mapGen;
 
     private void Awake()
     {
         rainSys = FindObjectOfType<ParticleSystem>();
         btnRain = FindObjectOfType<Button>();
         gravitySlider = GameObject.Find("Gravity").GetComponent<Slider>();
-        mapGen = FindObjectOfType<MapGenerator>();
     }
 
     private void Start()
@@ -27,7 +25,6 @@ public class RainMovement : MonoBehaviour
     private void SwitchRain()
     {
         play = !play;
-        mapGen.rains = play;
         if (play)
         {
             float x = Camera.main.transform.position.x;

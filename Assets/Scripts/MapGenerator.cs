@@ -18,7 +18,6 @@ public class MapGenerator : MonoBehaviour
     public Material terrainMaterial;
     public TextureData textureData;
     public GenericNoise noiseFunc = new PerlinNoiseFunction();
-    public bool rains = false;
 
     Queue<MapThreadInfo<float[,]>> heightMapThreadInfoQueue = new Queue<MapThreadInfo<float[,]>>();
     Queue<MapThreadInfo<MeshData>> meshDataThreadInfoQueue = new Queue<MapThreadInfo<MeshData>>();
