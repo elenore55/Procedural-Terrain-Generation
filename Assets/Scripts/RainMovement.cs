@@ -35,6 +35,7 @@ public class RainMovement : MonoBehaviour
             CameraMovement.movementEnabled = false;
             btnRain.GetComponentInChildren<Text>().text = "Stop";
             btnRain.GetComponent<Image>().color = Color.red;
+            InfiniteTerrain.rains = true;
         }
         else
         {
@@ -42,6 +43,7 @@ public class RainMovement : MonoBehaviour
             CameraMovement.movementEnabled = true;
             btnRain.GetComponentInChildren<Text>().text = "Rain";
             btnRain.GetComponent<Image>().color = new Color(0.13f, 0.37f, 0.765f);
+            InfiniteTerrain.rains = false;
         }
     }
 

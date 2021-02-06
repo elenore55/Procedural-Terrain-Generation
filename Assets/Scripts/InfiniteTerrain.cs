@@ -10,10 +10,15 @@ public class InfiniteTerrain : MonoBehaviour
     public static float maxViewDist;
     public Material mapMaterial;
     public static Vector2 cameraPos;
+    public static float[,] currentTile;
+
+    public static bool rains = false;
+    private bool startedNow = true;
+    private int counter = 0;
 
     Vector2 cameraPosOld;
     public static MapGenerator mapGenerator;
-    public int tileSize;
+    public static int tileSize;
     int tilesVisibleDist;
     public Dictionary<Vector2, Tile> terrainTileDict = new Dictionary<Vector2, Tile>();
     public static List<Tile> tilesVisibleLastUpdate = new List<Tile>();
@@ -126,6 +131,28 @@ public class InfiniteTerrain : MonoBehaviour
 
     void Update()
     {
+        if (rains)
+        {
+            counter++;
+            int currentTileX = Mathf.RoundToInt(cameraPos.x / tileSize);
+            int currentTileY = Mathf.RoundToInt(cameraPos.y / tileSize);
+            if (startedNow)
+            {
+                currentTile = mapGenerator.GenerateHeightMap(new Vector2(currentTileX, currentTileY));
+                startedNow = false;
+            }
+            // Here were the three for loops
+            
+
+            Vector2 viewedTileCoord = new Vector2(currentTileX, currentTileY);
+            Tile t0 = terrainTileDict[viewedTileCoord];
+            t0.SetVisible(false);
+            terrainTileDict.Remove(viewedTileCoord);
+            Tile t = new Tile(viewedTileCoord, tileSize, detailLevels, transform, mapMaterial);
+            t.OnMapDataReceived(currentTile);
+            terrainTileDict[viewedTileCoord] = t;
+            // Debug.Log(currentTile[0, 0]);
+        }
         cameraPos = new Vector2(Camera.main.transform.position.x, Camera.main.transform.position.z) / mapGenerator.scale;
         if ((cameraPosOld - cameraPos).sqrMagnitude > squareCameraMoveThreshold)
         {
