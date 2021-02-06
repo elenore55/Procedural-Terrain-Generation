@@ -6,7 +6,7 @@ public class CameraMovement : MonoBehaviour
     private float rotationSpeed = 2f;
     private const int MIN_CAMERA_HEIGHT = 50;
     public static bool movementEnabled = true;
-    public static bool rotationEnabled = true;
+    public static bool rotationEnabled = false;
 
     void Update()
     {
