@@ -13,7 +13,7 @@ public class InfiniteTerrain : MonoBehaviour
     public static float[,] currentMap;
 
     public static bool rains = false;
-    private bool startedNow = true;
+    public static bool startedNow = true;
     private int counter = 0;
 
     Vector2 cameraPosOld;
@@ -51,7 +51,7 @@ public class InfiniteTerrain : MonoBehaviour
         lacunaritySlider.onValueChanged.AddListener(delegate { UpdateLacunarity(); });
         persistanceSlider.onValueChanged.AddListener(delegate { UpdatePersistance(); });
         octavesSlider.onValueChanged.AddListener(delegate { UpdateOctaves(); });
-        scaleSlider.onValueChanged.AddListener(delegate { UpdateSeed(); });
+        scaleSlider.onValueChanged.AddListener(delegate { UpdateScale(); });
     }
 
     private void DropdownsInit()
@@ -62,25 +62,13 @@ public class InfiniteTerrain : MonoBehaviour
         interpChoice.onValueChanged.AddListener(delegate { UpdateInterp(); });
     }
 
-    private void UpdateLacunarity()
-    {
-        mapGenerator.lacunarity = lacunaritySlider.value;
-    }
+    private void UpdateLacunarity() { mapGenerator.lacunarity = lacunaritySlider.value; }
 
-    private void UpdatePersistance()
-    {
-        mapGenerator.persistance = persistanceSlider.value;
-    }
+    private void UpdatePersistance() { mapGenerator.persistance = persistanceSlider.value; }
 
-    private void UpdateOctaves()
-    {
-        mapGenerator.octaves = (int)octavesSlider.value;
-    }
+    private void UpdateOctaves() { mapGenerator.octaves = (int)octavesSlider.value; }
 
-    private void UpdateSeed()
-    {
-        mapGenerator.noiseScale = scaleSlider.value;
-    }
+    private void UpdateScale() { mapGenerator.noiseScale = scaleSlider.value; }
 
     private void UpdateNoise()
     {
@@ -94,8 +82,10 @@ public class InfiniteTerrain : MonoBehaviour
                 mapGenerator.noiseFunc = new OpenSimplexNoise();
                 break;
             case (int)NoiseIndices.Custom:
-                CustomNoise cn = new CustomNoise();
                 mapGenerator.noiseFunc = new CustomNoise();
+                break;
+            case (int)NoiseIndices.Cubic:
+                mapGenerator.noiseFunc = new CubicNoise();
                 break;
             default:
                 mapGenerator.noiseFunc = new PerlinNoiseFunction();

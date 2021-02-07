@@ -9,19 +9,7 @@ public class CameraMovement : MonoBehaviour
     public static bool rotationEnabled = false;
 
     void Update()
-    {
-        // Debug.Log(transform.position);
-        //int currentTileX = Mathf.RoundToInt(transform.position.x / InfiniteTerrain.tileSize);
-        //int currentTileY = Mathf.RoundToInt(transform.position.y / InfiniteTerrain.tileSize);
-        //if (currentTileX != prevX || currentTileY != prevY)
-        //{
-
-        //    Debug.Log("From: " + prevX + ", " + prevY + "To: " + currentTileX + ", " + currentTileY);
-        //    prevX = currentTileX;
-        //    prevY = currentTileY;
-        //    Debug.Log(transform.position);
-        //}
-        
+    {   
         MoveCamera();
         RotateCamera();
         if (Input.GetKey(KeyCode.L))

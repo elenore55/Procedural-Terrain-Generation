@@ -15,12 +15,11 @@ public class CustomNoise : GenericNoise
         float fy = Fract(y);
   
         Vector2 iV = new Vector2(ix, iy);
-        Vector2 fV = new Vector2(fx, fy);
 
-        float a = myRandom(iV);
-        float b = myRandom(iV + new Vector2(1, 0));
-        float c = myRandom(iV + new Vector2(0, 1));
-        float d = myRandom(iV + new Vector2(1, 1));
+        float a = MyRandom(iV);
+        float b = MyRandom(iV + new Vector2(1, 0));
+        float c = MyRandom(iV + new Vector2(0, 1));
+        float d = MyRandom(iV + new Vector2(1, 1));
 
         float x1 = Callback(a, b, fx);
         float x2 = Callback(c, d, fx);
@@ -54,7 +53,7 @@ public class CustomNoise : GenericNoise
         return Linear(x, y, 1 - (1 - t) * (1 - t));
     }
 
-    float myRandom(Vector2 v)
+    float MyRandom(Vector2 v)
     {
         Vector2 other = new Vector2(12.9898f, 78.233f);
         return Fract(Mathf.Sin(Dot(v, other)) * 43758.5453123f);

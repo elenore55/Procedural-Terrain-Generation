@@ -67,6 +67,7 @@
     <Compile Include="Assets\Scripts\InfiniteTerrain.cs" />
     <Compile Include="Assets\Scripts\MapGenerator.cs" />
     <Compile Include="Assets\Scripts\MeshGenerator.cs" />
+    <Compile Include="Assets\Scripts\NoiseFunctions\CubicNoise.cs" />
     <Compile Include="Assets\Scripts\NoiseFunctions\CustomNoise.cs" />
     <Compile Include="Assets\Scripts\NoiseFunctions\GenericNoise.cs" />
     <Compile Include="Assets\Scripts\NoiseFunctions\Noise.cs" />

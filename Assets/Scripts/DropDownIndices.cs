@@ -2,7 +2,8 @@
 {
     Perlin = 0,
     OpenSimplex = 1,
-    Custom = 2
+    Custom = 2,
+    Cubic = 3
 }
 
 public enum InterpIndices

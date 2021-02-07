@@ -6,20 +6,17 @@ public class RainMovement : MonoBehaviour
     private ParticleSystem rainSys;
     private Button btnRain;
     private bool play = false;
-    private Slider gravitySlider;
 
     private void Awake()
     {
         rainSys = FindObjectOfType<ParticleSystem>();
         btnRain = FindObjectOfType<Button>();
-        gravitySlider = GameObject.Find("Gravity").GetComponent<Slider>();
     }
 
     private void Start()
     {
         rainSys.Stop();
         btnRain.onClick.AddListener(SwitchRain);
-        gravitySlider.onValueChanged.AddListener(delegate { UpdateGravity(); });   
     }
 
     private void SwitchRain()
@@ -44,13 +41,7 @@ public class RainMovement : MonoBehaviour
             btnRain.GetComponentInChildren<Text>().text = "Rain";
             btnRain.GetComponent<Image>().color = new Color(0.13f, 0.37f, 0.765f);
             InfiniteTerrain.rains = false;
+            InfiniteTerrain.startedNow = true;
         }
-    }
-
-    void UpdateGravity()
-    {
-        ParticleSystem.MainModule psMain;
-        psMain = rainSys.main;
-        psMain.gravityModifierMultiplier = gravitySlider.value;
     }
 }
