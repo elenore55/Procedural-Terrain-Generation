@@ -9,16 +9,34 @@ public class RainCollision : MonoBehaviour
     public List<ParticleCollisionEvent> collisionEvents;
     ParticleSystem.Particle[] droplets;
 
-    const float WATER_THRESHOLD = 0.25f;
+    const int RADIUS = 3;
     const float INERTIA = 0.5f;
     const float WATER_CAPACITY = 3;
-    const float SEDIMENT_CAPACITY = 2;
+    const float SEDIMENT_CAPACITY = 4;
     const float MIN_SEDIMENT_CAPACITY = 0.1f;
-    const float GRAVITY = 2;
+    const float GRAVITY = 4;
     const float INITIAL_SPEED = 1;
     const float EROSION_SPEED = 0.3f;
     const float DEPOSIT_SPEED = 0.3f;
-    const int MAX_ITERS = 3;
+    const float EVAPORATION_SPEED = 0.01f;
+    const int MAX_ITERS = 20;
+
+    int[][] erosionBrushIndices;
+    float[][] erosionBrushWeights;
+
+    int currentErosionRadius;
+    int currentMapSize;
+
+
+    void Initialize(int mapSize)
+    {
+        if (erosionBrushIndices == null || currentErosionRadius != RADIUS || currentMapSize != mapSize)
+        {
+            InitializeBrushIndices(mapSize, RADIUS);
+            currentErosionRadius = RADIUS;
+            currentMapSize = mapSize;
+        }
+    }
 
 
     private void OnParticleCollision(GameObject other)
@@ -26,6 +44,8 @@ public class RainCollision : MonoBehaviour
         int numCollisionEvents = rainSystem.GetCollisionEvents(other, collisionEvents);
         int numParticlesAlive = rainSystem.GetParticles(droplets);
         int sz = InfiniteTerrain.tileSize;
+        float deltaHeight = 0.01f;
+        Initialize(sz);
         for (int i = 0; i < numCollisionEvents; i++)
         {
             
@@ -42,9 +62,10 @@ public class RainCollision : MonoBehaviour
             float u = Fract(pos.x);
             float v = Fract(pos.y);
             Vector2 dropletPos = new Vector2(x + u, y + v);
+            Vector2 dir = new Vector2(0, 0);
 
-            float dirX = 0;
-            float dirY = 0;
+            // float dirX = 0;
+            // float dirY = 0;
 
             float water = WATER_CAPACITY;
             float speed = INITIAL_SPEED;
@@ -62,26 +83,25 @@ public class RainCollision : MonoBehaviour
                 HeightAndGrad heightAndGrad = CalculateHeightAndGrad(InfiniteTerrain.currentMap, sz, 
                                                                          dropletPos.x, dropletPos.y);
 
-                dirX = (dirX * INERTIA - heightAndGrad.gradX * (1 - INERTIA));
-                dirY = (dirY * INERTIA - heightAndGrad.gradY * (1 - INERTIA));
+                dir.x = (dir.x * INERTIA - heightAndGrad.gradX * (1 - INERTIA));
+                dir.y = (dir.y * INERTIA - heightAndGrad.gradY * (1 - INERTIA));
 
-                float len = Mathf.Sqrt(dirX * dirX + dirY * dirY);
+                float len = Mathf.Sqrt(dir.x * dir.x + dir.y * dir.y);
                 if (len != 0)
                 {
-                    dirX /= len;
-                    dirY /= len;
+                    dir.x /= len;
+                    dir.y /= len;
                 }
-                dropletPos.x += dirX;
-                dropletPos.y += dirY;
+                dropletPos.x += dir.x;
+                dropletPos.y += dir.y;
 
                 if (dropletPos.x <= 0 || dropletPos.x >= sz - 1 || dropletPos.y <= 0 || dropletPos.y >= sz - 1)
                     break;
 
                 float newHeight = CalculateHeightAndGrad(InfiniteTerrain.currentMap, sz, dropletPos.x, dropletPos.y).height;
-                float deltaHeight = newHeight - heightAndGrad.height;
+                deltaHeight = newHeight - heightAndGrad.height;
 
                 float sedimentCapacity = Mathf.Max(-deltaHeight * speed * water * SEDIMENT_CAPACITY, MIN_SEDIMENT_CAPACITY);
-
                 if (sediment > sedimentCapacity || deltaHeight > 0)
                 {
                     // If moving uphill (deltaHeight > 0) try fill up to the current height, otherwise deposit a fraction of the excess sediment
@@ -102,19 +122,22 @@ public class RainCollision : MonoBehaviour
                     // Clamp the erosion to the change in height so that it doesn't dig a hole in the terrain behind the droplet
                     float h = InfiniteTerrain.currentMap[nodeX, nodeY];
                     float w = ErosionWeight(h);
-                    float amountToErode = Mathf.Min((sedimentCapacity - sediment) * EROSION_SPEED, -deltaHeight) * w;
+                    float amountToErode = Mathf.Min((sedimentCapacity - sediment) * EROSION_SPEED, -deltaHeight);
 
-                    // Use erosion brush to erode from all nodes inside the droplet's erosion radius
-
-                    // int nodeIndex = erosionBrushIndices[dropletIndex][brushPointIndex];
-                    float deltaSediment = (InfiniteTerrain.currentMap[nodeX, nodeY] < amountToErode) ? InfiniteTerrain.currentMap[nodeX, nodeY] : amountToErode;
-                    InfiniteTerrain.currentMap[nodeX, nodeY] -= deltaSediment;
-                    sediment += deltaSediment;
+                    for (int brushPointIndex = 0; brushPointIndex < erosionBrushIndices[dropletIndex].Length; brushPointIndex++)
+                    {
+                        int nodeIndex = erosionBrushIndices[dropletIndex][brushPointIndex];
+                        int X = nodeIndex % sz;
+                        int Y = nodeIndex / sz;
+                        float weighedErodeAmount = amountToErode * erosionBrushWeights[dropletIndex][brushPointIndex];
+                        float deltaSediment = (InfiniteTerrain.currentMap[X, Y] < weighedErodeAmount) ? InfiniteTerrain.currentMap[X, Y] : weighedErodeAmount;
+                        InfiniteTerrain.currentMap[X, Y] -= deltaSediment;
+                        sediment += deltaSediment;
+                    }
                 }
             }
-
-            //if (InfiniteTerrain.currentMap[x, y] > WATER_THRESHOLD)
-                //InfiniteTerrain.currentMap[x, y] -= 4;
+            speed = Mathf.Sqrt(speed * speed + deltaHeight * GRAVITY);
+            water *= (1 - EVAPORATION_SPEED);
         }
     }
 
@@ -160,6 +183,62 @@ public class RainCollision : MonoBehaviour
         float height = heightNW * (1 - u) * (1 - v) + heightNE * u * (1 - v) + heightSW * (1 - u) * v + heightSE * u * v;
 
         return new HeightAndGrad() { height = height, gradX = gradientX, gradY = gradientY };
+    }
+
+    void InitializeBrushIndices(int mapSize, int radius)
+    {
+        erosionBrushIndices = new int[mapSize * mapSize][];
+        erosionBrushWeights = new float[mapSize * mapSize][];
+
+        int[] xOffsets = new int[radius * radius * 4];
+        int[] yOffsets = new int[radius * radius * 4];
+        float[] weights = new float[radius * radius * 4];
+        float weightSum = 0;
+        int addIndex = 0;
+
+        for (int i = 0; i < erosionBrushIndices.GetLength(0); i++)
+        {
+            int centreX = i % mapSize;
+            int centreY = i / mapSize;
+
+            if (centreY <= radius || centreY >= mapSize - radius || centreX <= radius + 1 || centreX >= mapSize - radius)
+            {
+                weightSum = 0;
+                addIndex = 0;
+                for (int y = -radius; y <= radius; y++)
+                {
+                    for (int x = -radius; x <= radius; x++)
+                    {
+                        float sqrDst = x * x + y * y;
+                        if (sqrDst < radius * radius)
+                        {
+                            int coordX = centreX + x;
+                            int coordY = centreY + y;
+
+                            if (coordX >= 0 && coordX < mapSize && coordY >= 0 && coordY < mapSize)
+                            {
+                                float weight = 1 - Mathf.Sqrt(sqrDst) / radius;
+                                weightSum += weight;
+                                weights[addIndex] = weight;
+                                xOffsets[addIndex] = x;
+                                yOffsets[addIndex] = y;
+                                addIndex++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            int numEntries = addIndex;
+            erosionBrushIndices[i] = new int[numEntries];
+            erosionBrushWeights[i] = new float[numEntries];
+
+            for (int j = 0; j < numEntries; j++)
+            {
+                erosionBrushIndices[i][j] = (yOffsets[j] + centreY) * mapSize + xOffsets[j] + centreX;
+                erosionBrushWeights[i][j] = weights[j] / weightSum;
+            }
+        }
     }
 }
 
