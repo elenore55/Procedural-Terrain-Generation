@@ -2,22 +2,22 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-
 [RequireComponent(typeof(ParticleSystem))]
 public class RainCollision : MonoBehaviour
 {
-    public ParticleSystem rainSystem;
-    public List<ParticleCollisionEvent> collisionEvents;
+    ParticleSystem rainSystem;
+    List<ParticleCollisionEvent> collisionEvents;
     ParticleSystem.Particle[] droplets;
-
     Slider gravitySlider;
     Slider maxIterSlider;
     Slider erosionSpeedSlider;
     Slider evapSpeedSlider;
     Slider depositSpeedSlider;
+    Slider radiusSlider;
+    Slider inertiaSlider;
 
-    const int RADIUS = 3;
-    const float INERTIA = 0.5f;
+    int RADIUS = 7;
+    float INERTIA = 0.5f;
     const float WATER_CAPACITY = 3;
     const float SEDIMENT_CAPACITY = 4;
     const float MIN_SEDIMENT_CAPACITY = 0.1f;
@@ -34,10 +34,14 @@ public class RainCollision : MonoBehaviour
     int currentErosionRadius;
     int currentMapSize;
 
-    void Start()
+    private void Awake()
     {
         SlidersInit();
         rainSystem = FindObjectOfType<ParticleSystem>();
+    }
+
+    private void Start()
+    {
         collisionEvents = new List<ParticleCollisionEvent>();
         if (droplets == null || droplets.Length < rainSystem.main.maxParticles)
             droplets = new ParticleSystem.Particle[rainSystem.main.maxParticles];
@@ -50,23 +54,31 @@ public class RainCollision : MonoBehaviour
         erosionSpeedSlider = GameObject.Find("ErosionSpeed").GetComponent<Slider>();
         evapSpeedSlider = GameObject.Find("EvapSpeed").GetComponent<Slider>();
         depositSpeedSlider = GameObject.Find("DepositSpeed").GetComponent<Slider>();
+        radiusSlider = GameObject.Find("Radius").GetComponent<Slider>();
+        inertiaSlider = GameObject.Find("Inertia").GetComponent<Slider>();
+        AddSliderListeners();
+        
+    }
 
+    private void AddSliderListeners()
+    {
         gravitySlider.onValueChanged.AddListener(delegate { UpdateGravity(); });
         maxIterSlider.onValueChanged.AddListener(delegate { UpdateLifeSpan(); });
         erosionSpeedSlider.onValueChanged.AddListener(delegate { UpdateErosionSpeed(); });
         evapSpeedSlider.onValueChanged.AddListener(delegate { UpdateEvapSpeed(); });
         depositSpeedSlider.onValueChanged.AddListener(delegate { UpdateDepositSpeed(); });
+        radiusSlider.onValueChanged.AddListener(delegate { UpdateRadius(); });
+        inertiaSlider.onValueChanged.AddListener(delegate { UpdateInertia(); });
     }
 
     private void UpdateGravity() { GRAVITY = gravitySlider.value; }
-
     private void UpdateErosionSpeed() { EROSION_SPEED = erosionSpeedSlider.value; }
-
     private void UpdateDepositSpeed() { DEPOSIT_SPEED = depositSpeedSlider.value; }
-
     private void UpdateEvapSpeed() { EVAPORATION_SPEED = evapSpeedSlider.value; }
-
     private void UpdateLifeSpan() { MAX_ITERS = (int)maxIterSlider.value; }
+    private void UpdateRadius() { RADIUS = (int)radiusSlider.value; }
+    private void UpdateInertia() { INERTIA = inertiaSlider.value; } 
+
 
     private void Initialize(int mapSize)
     {
@@ -81,70 +93,66 @@ public class RainCollision : MonoBehaviour
     private void OnParticleCollision(GameObject other)
     {
         int numCollisionEvents = rainSystem.GetCollisionEvents(other, collisionEvents);
+        RainMovement.IncreaseNumOfRaindrops(numCollisionEvents);
         int sz = InfiniteTerrain.tileSize;
         float deltaH = 0.01f;
         Initialize(sz);
         for (int i = 0; i < numCollisionEvents; i++)
         {
             Vector3 worldPos = collisionEvents[i].intersection;
-            Vector2 dropletPos = GetOnMapPos(worldPos, sz);
-            if (dropletPos.x < 2 || dropletPos.x > sz - 2 || dropletPos.y < 2 || dropletPos.y > sz - 2)
+            Vector2 dropletPos = GetOnMapPosition(worldPos, sz);
+            if (dropletPos.x < 1 || dropletPos.x > sz - 2 || dropletPos.y < 1 || dropletPos.y > sz - 2)
                 continue;
             Vector2 dir = new Vector2();
-
             float water = WATER_CAPACITY;
             float speed = INITIAL_SPEED;
             float sediment = 0;
 
             for (int j = 0; j < MAX_ITERS; j++)
             {
-                int nodeX = (int)dropletPos.x;
-                int nodeY = (int)dropletPos.y;
-                int dropletIndex = nodeY * sz + nodeX;
-                float u = dropletPos.x - nodeX; 
-                float v = dropletPos.y - nodeY;
+                int iX = (int)dropletPos.x;
+                int iY = (int)dropletPos.y;
+                int dropletArrIndex = iY * sz + iX;
+                float u = dropletPos.x - iX; 
+                float v = dropletPos.y - iY;
 
-                Vector2 grad = CalculateGradient(dropletPos, InfiniteTerrain.currentMap);
-                float height = CalculateHeight(dropletPos, InfiniteTerrain.currentMap);
+                Vector2 grad = CalculateGradient(dropletPos, InfiniteTerrain.erodedMap);
+                float height = CalculateHeight(dropletPos, InfiniteTerrain.erodedMap);
                 dir = dir * INERTIA - grad * (1 - INERTIA);
                 dir.Normalize();
                 dropletPos += dir;
-
                 if (dropletPos.x <= 0 || dropletPos.x >= sz - 1 || dropletPos.y <= 0 || dropletPos.y >= sz - 1)
                     break;
 
-                float heightNew = CalculateHeight(dropletPos, InfiniteTerrain.currentMap);
+                float heightNew = CalculateHeight(dropletPos, InfiniteTerrain.erodedMap);
                 deltaH = heightNew - height;
 
                 float sedimentCapacity = Mathf.Max(-deltaH * speed * water * SEDIMENT_CAPACITY, MIN_SEDIMENT_CAPACITY);
                 if (sediment > sedimentCapacity || deltaH > 0)
                 {
-                    // If moving uphill (deltaHeight > 0) try fill up to the current height, otherwise deposit a fraction of the excess sediment
-                    float amountToDeposit = (deltaH > 0) ? Mathf.Min(deltaH, sediment) : (sediment - sedimentCapacity) * DEPOSIT_SPEED;
-                    sediment -= amountToDeposit;
-
-                    // Add the sediment to the four nodes of the current cell using bilinear interpolation
-                    // Deposition is not distributed over a radius (like erosion) so that it can fill small pits
-                    InfiniteTerrain.currentMap[nodeX, nodeY] += amountToDeposit * (1 - u) * (1 - v);
-                    InfiniteTerrain.currentMap[nodeX + 1, nodeY] += amountToDeposit * u * (1 - v);
-                    InfiniteTerrain.currentMap[nodeX, nodeY + 1] += amountToDeposit * (1 - u) * v;
-                    InfiniteTerrain.currentMap[nodeX + 1, nodeY + 1] += amountToDeposit * u * v;
+                    float depositAmount;
+                    if (deltaH > 0) depositAmount = Mathf.Min(deltaH, sediment);
+                    else depositAmount = (sediment - sedimentCapacity) * DEPOSIT_SPEED;
+                    sediment -= depositAmount;
+                    InfiniteTerrain.erodedMap[iX, iY] += depositAmount * (1 - u) * (1 - v);
+                    InfiniteTerrain.erodedMap[iX + 1, iY] += depositAmount * u * (1 - v);
+                    InfiniteTerrain.erodedMap[iX, iY + 1] += depositAmount * (1 - u) * v;
+                    InfiniteTerrain.erodedMap[iX + 1, iY + 1] += depositAmount * u * v;
 
                 }
                 else
                 {
-                    // Erode a fraction of the droplet's current carry capacity.
-                    // Clamp the erosion to the change in height so that it doesn't dig a hole in the terrain behind the droplet
-                    float amountToErode = Mathf.Min((sedimentCapacity - sediment) * EROSION_SPEED, -deltaH);
-
-                    for (int brushPointIndex = 0; brushPointIndex < erosionBrushIndices[dropletIndex].Length; brushPointIndex++)
+                    float erosionAmount = Mathf.Min((sedimentCapacity - sediment) * EROSION_SPEED, -deltaH);
+                    for (int brushPointIndex = 0; brushPointIndex < erosionBrushIndices[dropletArrIndex].Length; brushPointIndex++)
                     {
-                        int nodeIndex = erosionBrushIndices[dropletIndex][brushPointIndex];
+                        int nodeIndex = erosionBrushIndices[dropletArrIndex][brushPointIndex];
                         int X = nodeIndex % sz;
                         int Y = nodeIndex / sz;
-                        float weighedErodeAmount = amountToErode * erosionBrushWeights[dropletIndex][brushPointIndex];
-                        float deltaSediment = (InfiniteTerrain.currentMap[X, Y] < weighedErodeAmount) ? InfiniteTerrain.currentMap[X, Y] : weighedErodeAmount;
-                        InfiniteTerrain.currentMap[X, Y] -= deltaSediment;
+                        float weighedErodeAmount = erosionAmount * erosionBrushWeights[dropletArrIndex][brushPointIndex];
+                        float deltaSediment;
+                        if (InfiniteTerrain.erodedMap[X, Y] < weighedErodeAmount) deltaSediment = InfiniteTerrain.erodedMap[X, Y];
+                        else deltaSediment = weighedErodeAmount;
+                        InfiniteTerrain.erodedMap[X, Y] -= deltaSediment;
                         sediment += deltaSediment;
                     }
                 }
@@ -154,7 +162,7 @@ public class RainCollision : MonoBehaviour
         }
     }
 
-    Vector2 GetOnMapPos(Vector3 worldPos, int mapSize)
+    Vector2 GetOnMapPosition(Vector3 worldPos, int mapSize)
     {
         int x = (int)worldPos.x % mapSize;
         int y = (int)worldPos.z % mapSize;
@@ -172,7 +180,6 @@ public class RainCollision : MonoBehaviour
         int y = (int)pos.y;
         float u = pos.x - x;
         float v = pos.y - y;
-
         CellHeights ch = GetCellHeights(pos, heightMap);
         grad.x = (ch.height10 - ch.height00) * (1 - v) + (ch.height11 - ch.height01) * v;
         grad.y = (ch.height01 - ch.height00) * (1 - u) + (ch.height11 - ch.height10) * u;
@@ -185,9 +192,9 @@ public class RainCollision : MonoBehaviour
         int y = (int)pos.y;
         float u = pos.x - x;
         float v = pos.y - y;
-
         CellHeights ch = GetCellHeights(pos, heightMap);
-        return ch.height00 * (1 - u) * (1 - v) + ch.height10 * u * (1 - v) + ch.height01 * (1 - u) * v + ch.height11 * u * v;
+        return ch.height00 * (1 - u) * (1 - v) + ch.height10 * u * (1 - v) + 
+               ch.height01 * (1 - u) * v + ch.height11 * u * v;
     }
 
     CellHeights GetCellHeights(Vector2 pos, float[,] map)

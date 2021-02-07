@@ -2,11 +2,13 @@
 
 public class CameraMovement : MonoBehaviour
 {
-    private float movementSpeed = 100.0f;
-    private float rotationSpeed = 2f;
-    private const int MIN_CAMERA_HEIGHT = 50;
-    public static bool movementEnabled = true;
-    public static bool rotationEnabled = false;
+    float movementSpeed = 100.0f;
+    float rotationSpeed = 2f;
+    const int MIN_CAMERA_HEIGHT = 50;
+    static bool movementEnabled = true;
+    bool rotationEnabled = false;
+
+    public static void EnableMovement(bool enabled) { movementEnabled = enabled; }
 
     void Update()
     {   

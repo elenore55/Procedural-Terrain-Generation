@@ -60,7 +60,6 @@ public class Tile
     {
         if (heightMapReceived)
         {
-            // this could be helpful!!!
             float cameraDistFromEdge = Mathf.Sqrt(bounds.SqrDistance(InfiniteTerrain.cameraPos));
             bool visible = cameraDistFromEdge <= InfiniteTerrain.maxViewDist;
             if (visible)

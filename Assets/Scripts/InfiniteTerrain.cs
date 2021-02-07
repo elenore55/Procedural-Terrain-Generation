@@ -10,7 +10,7 @@ public class InfiniteTerrain : MonoBehaviour
     public static float maxViewDist;
     public Material mapMaterial;
     public static Vector2 cameraPos;
-    public static float[,] currentMap;
+    public static float[,] erodedMap;
 
     public static bool rains = false;
     public static bool startedNow = true;
@@ -30,11 +30,15 @@ public class InfiniteTerrain : MonoBehaviour
     Dropdown noiseChoice;
     Dropdown interpChoice;
 
-    void Start()
+    private void Awake()
     {
         mapGenerator = FindObjectOfType<MapGenerator>();
         SlidersInit();
         DropdownsInit();
+    }
+
+    private void Start()
+    {
         maxViewDist = detailLevels[detailLevels.Length - 1].visibleDistThreshold;
         tileSize = MapGenerator.tileSize -1 ;
         tilesVisibleDist = Mathf.RoundToInt(maxViewDist / tileSize);
@@ -47,6 +51,11 @@ public class InfiniteTerrain : MonoBehaviour
         persistanceSlider = GameObject.Find("Persistance").GetComponent<Slider>();
         octavesSlider = GameObject.Find("Octaves").GetComponent<Slider>();
         scaleSlider = GameObject.Find("Scale").GetComponent<Slider>();
+        AddSliderListeners();
+    }
+
+    private void AddSliderListeners()
+    {
         // Azurira se pri generisanju novih blokova terena
         lacunaritySlider.onValueChanged.AddListener(delegate { UpdateLacunarity(); });
         persistanceSlider.onValueChanged.AddListener(delegate { UpdatePersistance(); });
@@ -63,11 +72,8 @@ public class InfiniteTerrain : MonoBehaviour
     }
 
     private void UpdateLacunarity() { mapGenerator.lacunarity = lacunaritySlider.value; }
-
     private void UpdatePersistance() { mapGenerator.persistance = persistanceSlider.value; }
-
     private void UpdateOctaves() { mapGenerator.octaves = (int)octavesSlider.value; }
-
     private void UpdateScale() { mapGenerator.noiseScale = scaleSlider.value; }
 
     private void UpdateNoise()
@@ -130,12 +136,10 @@ public class InfiniteTerrain : MonoBehaviour
             {
                 Vector2 viewedTileCoord = new Vector2(currentTileX, currentTileY);
                 viewedTileCoord *= tileSize;
-                currentMap = mapGenerator.GenerateHeightMap(viewedTileCoord);
+                erodedMap = mapGenerator.GenerateHeightMap(viewedTileCoord);
                 startedNow = false;
             }
-            // Here were the three for loops
-
-            RegenerateTile(currentTileX, currentTileY, currentMap);
+            RegenerateTile(currentTileX, currentTileY, erodedMap);
 
             //RegenerateTile(currentTileX + 1, currentTileY);
             //RegenerateTile(currentTileX - 1, currentTileY);
