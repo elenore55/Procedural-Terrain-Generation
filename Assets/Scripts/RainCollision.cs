@@ -16,7 +16,7 @@ public class RainCollision : MonoBehaviour
     Slider radiusSlider;
     Slider inertiaSlider;
 
-    static int RADIUS = 5;
+    int RADIUS = 5;
     float INERTIA = 0.5f;
     const float WATER_CAPACITY = 3;
     const float SEDIMENT_CAPACITY = 4;
@@ -28,13 +28,8 @@ public class RainCollision : MonoBehaviour
     float EVAPORATION_SPEED = 0.01f;
     int MAX_ITERS = 20;
 
-    int[][] erosionRadiusIndices;
-    static Dictionary<Vector2Int, List<Vector2Int>> radiusIndices;
-    float[][] erosionBrushWeights;
-    static Dictionary<Vector2Int, List<float>> radiusWeights;
-
-    int currentErosionRadius;
-    int currentMapSize;
+    Dictionary<Vector2Int, List<Vector2Int>> radiusIndices;
+    Dictionary<Vector2Int, List<float>> radiusWeights;
 
     private void Awake()
     {
@@ -47,7 +42,9 @@ public class RainCollision : MonoBehaviour
         collisionEvents = new List<ParticleCollisionEvent>();
         if (droplets == null || droplets.Length < rainSystem.main.maxParticles)
             droplets = new ParticleSystem.Particle[rainSystem.main.maxParticles];
-        Initialize(InfiniteTerrain.tileSize);
+        radiusIndices = new Dictionary<Vector2Int, List<Vector2Int>>();
+        radiusWeights = new Dictionary<Vector2Int, List<float>>();
+        DetermineErosionRadiusIndices(InfiniteTerrain.tileSize);
     }
 
     private void SlidersInit()
@@ -79,15 +76,13 @@ public class RainCollision : MonoBehaviour
     private void UpdateDepositSpeed() { DEPOSIT_SPEED = depositSpeedSlider.value; }
     private void UpdateEvapSpeed() { EVAPORATION_SPEED = evapSpeedSlider.value; }
     private void UpdateLifeSpan() { MAX_ITERS = (int)maxIterSlider.value; }
-    private void UpdateRadius() { RADIUS = (int)radiusSlider.value; }
-    private void UpdateInertia() { INERTIA = inertiaSlider.value; } 
-
-
-    public static void Initialize(int mapSize)
+    private void UpdateInertia() { INERTIA = inertiaSlider.value; }
+    private void UpdateRadius()
     {
+        RADIUS = (int)radiusSlider.value;
         radiusIndices = new Dictionary<Vector2Int, List<Vector2Int>>();
         radiusWeights = new Dictionary<Vector2Int, List<float>>();
-        DetermineErosionRadiusIndices(mapSize, RADIUS);
+        DetermineErosionRadiusIndices(InfiniteTerrain.tileSize);
     }
 
     private void OnParticleCollision(GameObject other)
@@ -100,34 +95,32 @@ public class RainCollision : MonoBehaviour
         {
             Vector3 worldPos = collisionEvents[i].intersection;
             Vector2 dropletPos = GetOnMapPosition(worldPos, sz);
-            if (dropletPos.x < 1 || dropletPos.x > sz - 2 || dropletPos.y < 1 || dropletPos.y > sz - 2)
+            if (IsBorderPosition(dropletPos, sz))
                 continue;
             Vector2 dir = new Vector2();
             float water = WATER_CAPACITY;
             float speed = INITIAL_SPEED;
             float sediment = 0;
-
             for (int j = 0; j < MAX_ITERS; j++)
             {
                 int iX = (int)dropletPos.x;
                 int iY = (int)dropletPos.y;
-                int dropletArrIndex = iY * sz + iX;
                 float u = dropletPos.x - iX; 
                 float v = dropletPos.y - iY;
 
                 Vector2 grad = CalculateGradient(dropletPos, InfiniteTerrain.erodedMap);
                 float height = CalculateHeight(dropletPos, InfiniteTerrain.erodedMap);
-                dir = dir * INERTIA - grad * (1 - INERTIA);
+                dir = dir * INERTIA - grad * (1 - INERTIA); 
                 dir.Normalize();
                 dropletPos += dir;
-                if (dropletPos.x <= 0 || dropletPos.x >= sz - 1 || dropletPos.y <= 0 || dropletPos.y >= sz - 1)
+                if (!InRange(dropletPos, sz))
                     break;
 
                 float heightNew = CalculateHeight(dropletPos, InfiniteTerrain.erodedMap);
                 deltaH = heightNew - height;
 
                 float sedimentCapacity = Mathf.Max(-deltaH * speed * water * SEDIMENT_CAPACITY, MIN_SEDIMENT_CAPACITY);
-                if (sediment > sedimentCapacity || deltaH > 0)
+                if (deltaH > 0 || sediment > sedimentCapacity)
                 {
                     float depositAmount;
                     if (deltaH > 0) depositAmount = Mathf.Min(deltaH, sediment);
@@ -144,12 +137,11 @@ public class RainCollision : MonoBehaviour
                     Vector2Int key = new Vector2Int(iX, iY);
                     List<Vector2Int> nodeIndicesList = radiusIndices[key];
                     List<float> weightsList = radiusWeights[key];
-                    int counter = radiusWeights[key].Count;
-                    for (int erosionInd = 0; erosionInd < counter; erosionInd++)
+                    for (int k = 0; k < weightsList.Count; k++)
                     {
-                        float weighedErosionAmt = erosionAmount * weightsList[erosionInd];
-                        int X = nodeIndicesList[erosionInd].x;
-                        int Y = nodeIndicesList[erosionInd].y;
+                        float weighedErosionAmt = erosionAmount * weightsList[k];
+                        int X = nodeIndicesList[k].x;
+                        int Y = nodeIndicesList[k].y;
                         float deltaSediment;
                         if (InfiniteTerrain.erodedMap[X, Y] < weighedErosionAmt)
                             deltaSediment = InfiniteTerrain.erodedMap[X, Y];
@@ -164,7 +156,7 @@ public class RainCollision : MonoBehaviour
         }
     }
 
-    Vector2 GetOnMapPosition(Vector3 worldPos, int mapSize)
+    private Vector2 GetOnMapPosition(Vector3 worldPos, int mapSize)
     {
         int x = (int)worldPos.x % mapSize;
         int y = (int)worldPos.z % mapSize;
@@ -175,7 +167,7 @@ public class RainCollision : MonoBehaviour
         return new Vector2(x + u, y + v);
     }
 
-    Vector2 CalculateGradient(Vector2 pos, float[,] heightMap)
+    private Vector2 CalculateGradient(Vector2 pos, float[,] heightMap)
     {
         Vector2 grad = new Vector2();
         int x = (int)pos.x;
@@ -183,30 +175,31 @@ public class RainCollision : MonoBehaviour
         float u = pos.x - x;
         float v = pos.y - y;
         CellHeights ch = GetCellHeights(pos, heightMap);
-        grad.x = (ch.height10 - ch.height00) * (1 - v) + (ch.height11 - ch.height01) * v;
-        grad.y = (ch.height01 - ch.height00) * (1 - u) + (ch.height11 - ch.height10) * u;
+        grad.x = (ch.h10() - ch.h00()) * (1 - v) + (ch.h11() - ch.h01()) * v;
+        grad.y = (ch.h01() - ch.h00()) * (1 - u) + (ch.h11() - ch.h10()) * u;
         return grad;
     }
 
-    float CalculateHeight(Vector2 pos, float[,] heightMap)
+    private float CalculateHeight(Vector2 pos, float[,] heightMap)
     {
         int x = (int)pos.x;
         int y = (int)pos.y;
         float u = pos.x - x;
         float v = pos.y - y;
         CellHeights ch = GetCellHeights(pos, heightMap);
-        return ch.height00 * (1 - u) * (1 - v) + ch.height10 * u * (1 - v) + 
-               ch.height01 * (1 - u) * v + ch.height11 * u * v;
+        float height1x = ch.h00() + u * (ch.h10() - ch.h00());
+        float height2x = ch.h01() + u * (ch.h11() - ch.h01());
+        return height1x + v * (height2x - height1x);
     }
 
-    CellHeights GetCellHeights(Vector2 pos, float[,] map)
+    private CellHeights GetCellHeights(Vector2 pos, float[,] map)
     {
         int x = (int)pos.x;
         int y = (int)pos.y;
         return new CellHeights(map[x, y], map[x + 1, y], map[x, y + 1], map[x + 1, y + 1]);
     }
 
-    static void DetermineErosionRadiusIndices(int mapSize, int radius)
+    private void DetermineErosionRadiusIndices(int mapSize)
     {
         List<Vector2Int> coords = new List<Vector2Int>();
         float weightSum = 0;
@@ -219,19 +212,18 @@ public class RainCollision : MonoBehaviour
                 if (!radiusWeights.ContainsKey(key)) radiusWeights[key] = new List<float>();
                 List<float> weightsTemp = new List<float>();
                 weightSum = 0;
-                for (int y = -radius; y <= radius; y++)
+                for (int y = -RADIUS + 1; y < RADIUS; y++)
                 {
-                    for (int x = -radius; x <= radius; x++)
+                    for (int x = -RADIUS + 1; x < RADIUS; x++)
                     {
-                        float sqrDist = x * x + y * y;
-                        if (sqrDist < radius * radius)
+                        float distance = x * x + y * y;
+                        if (distance < RADIUS * RADIUS)
                         {
-                            int coordX = column + x;
-                            int coordY = row + y;
-                            if (InRange(coordX, coordY, mapSize))
+                            Vector2Int currentNode = new Vector2Int(column + x, row + y);
+                            if (InRange(currentNode, mapSize))
                             {
-                                radiusIndices[key].Add(new Vector2Int(coordX, coordY));
-                                float weight = 1 - Mathf.Sqrt(sqrDist) / radius;
+                                radiusIndices[key].Add(currentNode);
+                                float weight = Mathf.Abs(RADIUS - (key - currentNode).magnitude);
                                 weightSum += weight;
                                 weightsTemp.Add(weight);
                             }
@@ -244,18 +236,24 @@ public class RainCollision : MonoBehaviour
         }
     }
 
-    static bool InRange(int x, int y, int size)
+    private bool InRange(Vector2 pos, int size)
     {
-        return x >= 0 && y >= 0 && x < size && y < size;
+        return pos.x >= 0 && pos.y >= 0 && pos.x < size && pos.y < size;
     }
+
+    private bool IsBorderPosition(Vector2 pos, int size)
+    {
+        return pos.x < 1 || pos.x > size - 2 || pos.y < 1 || pos.y > size - 2;
+    }
+
 }
 
 class CellHeights
 { 
-    public float height00;
-    public float height10;
-    public float height01;
-    public float height11;
+    float height00;
+    float height10;
+    float height01;
+    float height11;
 
     public CellHeights(float h00, float h10, float h01, float h11)
     {
@@ -264,4 +262,9 @@ class CellHeights
         height01 = h01;
         height11 = h11;
     }
+
+    public float h00() { return height00; }
+    public float h10() { return height10; }
+    public float h01() { return height01; }
+    public float h11() { return height11; }
 }
