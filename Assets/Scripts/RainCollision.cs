@@ -16,20 +16,22 @@ public class RainCollision : MonoBehaviour
     Slider radiusSlider;
     Slider inertiaSlider;
 
-    int RADIUS = 7;
+    static int RADIUS = 5;
     float INERTIA = 0.5f;
     const float WATER_CAPACITY = 3;
     const float SEDIMENT_CAPACITY = 4;
     const float MIN_SEDIMENT_CAPACITY = 0.1f;
     float GRAVITY = 4;
     const float INITIAL_SPEED = 1;
-    float EROSION_SPEED = 0.3f;
+    float EROSION_SPEED = 0.5f;
     float DEPOSIT_SPEED = 0.3f;
     float EVAPORATION_SPEED = 0.01f;
     int MAX_ITERS = 20;
 
-    int[][] erosionBrushIndices;
+    int[][] erosionRadiusIndices;
+    static Dictionary<Vector2Int, List<Vector2Int>> radiusIndices;
     float[][] erosionBrushWeights;
+    static Dictionary<Vector2Int, List<float>> radiusWeights;
 
     int currentErosionRadius;
     int currentMapSize;
@@ -45,6 +47,7 @@ public class RainCollision : MonoBehaviour
         collisionEvents = new List<ParticleCollisionEvent>();
         if (droplets == null || droplets.Length < rainSystem.main.maxParticles)
             droplets = new ParticleSystem.Particle[rainSystem.main.maxParticles];
+        Initialize(InfiniteTerrain.tileSize);
     }
 
     private void SlidersInit()
@@ -80,14 +83,11 @@ public class RainCollision : MonoBehaviour
     private void UpdateInertia() { INERTIA = inertiaSlider.value; } 
 
 
-    private void Initialize(int mapSize)
+    public static void Initialize(int mapSize)
     {
-        if (erosionBrushIndices == null || currentErosionRadius != RADIUS || currentMapSize != mapSize)
-        {
-            InitializeBrushIndices(mapSize, RADIUS);
-            currentErosionRadius = RADIUS;
-            currentMapSize = mapSize;
-        }
+        radiusIndices = new Dictionary<Vector2Int, List<Vector2Int>>();
+        radiusWeights = new Dictionary<Vector2Int, List<float>>();
+        DetermineErosionRadiusIndices(mapSize, RADIUS);
     }
 
     private void OnParticleCollision(GameObject other)
@@ -96,7 +96,6 @@ public class RainCollision : MonoBehaviour
         RainMovement.IncreaseNumOfRaindrops(numCollisionEvents);
         int sz = InfiniteTerrain.tileSize;
         float deltaH = 0.01f;
-        Initialize(sz);
         for (int i = 0; i < numCollisionEvents; i++)
         {
             Vector3 worldPos = collisionEvents[i].intersection;
@@ -138,27 +137,30 @@ public class RainCollision : MonoBehaviour
                     InfiniteTerrain.erodedMap[iX + 1, iY] += depositAmount * u * (1 - v);
                     InfiniteTerrain.erodedMap[iX, iY + 1] += depositAmount * (1 - u) * v;
                     InfiniteTerrain.erodedMap[iX + 1, iY + 1] += depositAmount * u * v;
-
                 }
                 else
                 {
-                    float erosionAmount = Mathf.Min((sedimentCapacity - sediment) * EROSION_SPEED, -deltaH);
-                    for (int brushPointIndex = 0; brushPointIndex < erosionBrushIndices[dropletArrIndex].Length; brushPointIndex++)
+                    float erosionAmount = Mathf.Min((sedimentCapacity - sediment) * EROSION_SPEED, Mathf.Abs(deltaH));
+                    Vector2Int key = new Vector2Int(iX, iY);
+                    List<Vector2Int> nodeIndicesList = radiusIndices[key];
+                    List<float> weightsList = radiusWeights[key];
+                    int counter = radiusWeights[key].Count;
+                    for (int erosionInd = 0; erosionInd < counter; erosionInd++)
                     {
-                        int nodeIndex = erosionBrushIndices[dropletArrIndex][brushPointIndex];
-                        int X = nodeIndex % sz;
-                        int Y = nodeIndex / sz;
-                        float weighedErodeAmount = erosionAmount * erosionBrushWeights[dropletArrIndex][brushPointIndex];
+                        float weighedErosionAmt = erosionAmount * weightsList[erosionInd];
+                        int X = nodeIndicesList[erosionInd].x;
+                        int Y = nodeIndicesList[erosionInd].y;
                         float deltaSediment;
-                        if (InfiniteTerrain.erodedMap[X, Y] < weighedErodeAmount) deltaSediment = InfiniteTerrain.erodedMap[X, Y];
-                        else deltaSediment = weighedErodeAmount;
+                        if (InfiniteTerrain.erodedMap[X, Y] < weighedErosionAmt)
+                            deltaSediment = InfiniteTerrain.erodedMap[X, Y];
+                        else deltaSediment = weighedErosionAmt;
                         InfiniteTerrain.erodedMap[X, Y] -= deltaSediment;
                         sediment += deltaSediment;
                     }
                 }
             }
-            speed = Mathf.Sqrt(speed * speed + deltaH * GRAVITY);
             water *= (1 - EVAPORATION_SPEED);
+            speed = Mathf.Sqrt(Mathf.Pow(speed, 2) + deltaH * GRAVITY);
         }
     }
 
@@ -204,59 +206,47 @@ public class RainCollision : MonoBehaviour
         return new CellHeights(map[x, y], map[x + 1, y], map[x, y + 1], map[x + 1, y + 1]);
     }
 
-    void InitializeBrushIndices(int mapSize, int radius)
+    static void DetermineErosionRadiusIndices(int mapSize, int radius)
     {
-        erosionBrushIndices = new int[mapSize * mapSize][];
-        erosionBrushWeights = new float[mapSize * mapSize][];
-
-        int[] xOffsets = new int[radius * radius * 4];
-        int[] yOffsets = new int[radius * radius * 4];
-        float[] weights = new float[radius * radius * 4];
+        List<Vector2Int> coords = new List<Vector2Int>();
         float weightSum = 0;
-        int addIndex = 0;
-
-        for (int i = 0; i < erosionBrushIndices.GetLength(0); i++)
+        for (int row = 0; row < mapSize; row++)
         {
-            int centreX = i % mapSize;
-            int centreY = i / mapSize;
-
-            if (centreY <= radius || centreY >= mapSize - radius || centreX <= radius + 1 || centreX >= mapSize - radius)
+            for (int column = 0; column < mapSize; column++)
             {
+                Vector2Int key = new Vector2Int(row, column);
+                if (!radiusIndices.ContainsKey(key)) radiusIndices[key] = new List<Vector2Int>();
+                if (!radiusWeights.ContainsKey(key)) radiusWeights[key] = new List<float>();
+                List<float> weightsTemp = new List<float>();
                 weightSum = 0;
-                addIndex = 0;
                 for (int y = -radius; y <= radius; y++)
                 {
                     for (int x = -radius; x <= radius; x++)
                     {
-                        float sqrDst = x * x + y * y;
-                        if (sqrDst < radius * radius)
+                        float sqrDist = x * x + y * y;
+                        if (sqrDist < radius * radius)
                         {
-                            int coordX = centreX + x;
-                            int coordY = centreY + y;
-
-                            if (coordX >= 0 && coordX < mapSize && coordY >= 0 && coordY < mapSize)
+                            int coordX = column + x;
+                            int coordY = row + y;
+                            if (InRange(coordX, coordY, mapSize))
                             {
-                                float weight = 1 - Mathf.Sqrt(sqrDst) / radius;
+                                radiusIndices[key].Add(new Vector2Int(coordX, coordY));
+                                float weight = 1 - Mathf.Sqrt(sqrDist) / radius;
                                 weightSum += weight;
-                                weights[addIndex] = weight;
-                                xOffsets[addIndex] = x;
-                                yOffsets[addIndex] = y;
-                                addIndex++;
+                                weightsTemp.Add(weight);
                             }
                         }
                     }
                 }
-            }
-            int numEntries = addIndex;
-            erosionBrushIndices[i] = new int[numEntries];
-            erosionBrushWeights[i] = new float[numEntries];
-
-            for (int j = 0; j < numEntries; j++)
-            {
-                erosionBrushIndices[i][j] = (yOffsets[j] + centreY) * mapSize + xOffsets[j] + centreX;
-                erosionBrushWeights[i][j] = weights[j] / weightSum;
+                for (int k = 0; k < weightsTemp.Count; k++)
+                    radiusWeights[key].Add(weightsTemp[k] / weightSum);
             }
         }
+    }
+
+    static bool InRange(int x, int y, int size)
+    {
+        return x >= 0 && y >= 0 && x < size && y < size;
     }
 }
 

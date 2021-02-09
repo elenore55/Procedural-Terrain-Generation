@@ -14,7 +14,6 @@ public class InfiniteTerrain : MonoBehaviour
 
     public static bool rains = false;
     public static bool startedNow = true;
-    private int counter = 0;
 
     Vector2 cameraPosOld;
     public static MapGenerator mapGenerator;
@@ -129,7 +128,6 @@ public class InfiniteTerrain : MonoBehaviour
     {
         if (rains)
         {
-            counter++;
             int currentTileX = Mathf.RoundToInt(cameraPos.x / tileSize);
             int currentTileY = Mathf.RoundToInt(cameraPos.y / tileSize);
             if (startedNow)

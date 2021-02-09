@@ -10,6 +10,7 @@ public class CameraMovement : MonoBehaviour
 
     public static void EnableMovement(bool enabled) { movementEnabled = enabled; }
 
+
     void Update()
     {   
         MoveCamera();
