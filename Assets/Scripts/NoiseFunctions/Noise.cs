@@ -9,15 +9,14 @@ public static class Noise
         Vector2[] octaveOffsets = new Vector2[octaves];
         float amplitude = 1;
         float frequency = 1;
-
-        float maxH = float.MinValue;
-        float minH = float.MaxValue;
+        float maxH = 0;
 
         for (int i = 0; i < octaves; i++)
         {
             float offsetX = rnd.Next(-100000, 100000) + offset.x;
             float offsetY = rnd.Next(-100000, 100000) - offset.y;
             octaveOffsets[i] = new Vector2(offsetX, offsetY);
+            maxH += amplitude;
             amplitude *= persistance;
         }
 
@@ -38,13 +37,14 @@ public static class Noise
                     frequency *= lacunarity;  
                 }
                 heightMap[x, y] = height;
-                if (height < minH) minH = height;
-                if (height > maxH) maxH = height;
             }
         }
-        for (int y = 0; y < mapSize; y++)
-            for (int x = 0; x < mapSize; x++)
-                heightMap[x, y] = Mathf.InverseLerp(minH, maxH, heightMap[x, y]);
+        for (int y = 0; y < mapSize; y++) { 
+            for (int x = 0; x < mapSize; x++) {
+                float normalizedHeight = (heightMap[x, y] + 1f) / (maxH / 0.85f);
+                heightMap[x, y] = Mathf.Clamp01(normalizedHeight);
+            }
+        }
         return heightMap;
     }
 

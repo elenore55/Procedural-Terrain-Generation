@@ -12862,6 +12862,14 @@ MonoBehaviour:
       m_Image: {fileID: 0}
     - m_Text: Linear
       m_Image: {fileID: 0}
+    - m_Text: Quadratic Spline
+      m_Image: {fileID: 0}
+    - m_Text: Quadratic Poly
+      m_Image: {fileID: 0}
+    - m_Text: Cubic Spline
+      m_Image: {fileID: 0}
+    - m_Text: Cubic Poly
+      m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []

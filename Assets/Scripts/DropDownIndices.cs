@@ -12,5 +12,9 @@ public enum InterpIndices
     Acceleration = 1,
     Smoothstep = 2,
     Deceleration = 3,
-    Linear = 4
+    Linear = 4,
+    QuadraticSpline = 5,
+    QuadraticPoly = 6,
+    CubicSpline = 7,
+    CubicPoly = 8
 }

@@ -28,6 +28,7 @@ public class InfiniteTerrain : MonoBehaviour
     Slider scaleSlider;
     Dropdown noiseChoice;
     Dropdown interpChoice;
+    int chosenInterp = 0;
 
     private void Awake()
     {
@@ -87,7 +88,7 @@ public class InfiniteTerrain : MonoBehaviour
                 mapGenerator.noiseFunc = new OpenSimplexNoise();
                 break;
             case (int)NoiseIndices.Custom:
-                mapGenerator.noiseFunc = new CustomNoise();
+                mapGenerator.noiseFunc = new CustomNoise(chosenInterp);
                 break;
             case (int)NoiseIndices.Cubic:
                 mapGenerator.noiseFunc = new CubicNoise();
@@ -101,26 +102,8 @@ public class InfiniteTerrain : MonoBehaviour
     private void UpdateInterp()
     {
         noiseChoice.SetValueWithoutNotify((int)NoiseIndices.Custom);
-        int chosen = interpChoice.value;
-        CustomNoise cn = new CustomNoise();
-        switch(chosen)
-        {
-            case (int)InterpIndices.Cosine:
-                cn.Callback = cn.Cosine;
-                break;
-            case (int)InterpIndices.Acceleration:
-                cn.Callback = cn.Acceleration;
-                break;
-            case (int)InterpIndices.Smoothstep:
-                cn.Callback = cn.SmoothStep;
-                break;
-            case (int)InterpIndices.Deceleration:
-                cn.Callback = cn.Deceleration;
-                break;
-            case (int)InterpIndices.Linear:
-                cn.Callback = cn.Linear;
-                break;
-        }
+        chosenInterp = interpChoice.value;
+        CustomNoise cn = new CustomNoise(chosenInterp);
         mapGenerator.noiseFunc = cn;
     }
 
@@ -138,12 +121,6 @@ public class InfiniteTerrain : MonoBehaviour
                 startedNow = false;
             }
             RegenerateTile(currentTileX, currentTileY, erodedMap);
-
-            //RegenerateTile(currentTileX + 1, currentTileY);
-            //RegenerateTile(currentTileX - 1, currentTileY);
-            //RegenerateTile(currentTileX - 1, currentTileY + 1);
-            //RegenerateTile(currentTileX + 1, currentTileY + 1);
-            //RegenerateTile(currentTileX, currentTileY + 1);
         }
         cameraPos = new Vector2(Camera.main.transform.position.x, Camera.main.transform.position.z) / mapGenerator.scale;
         if ((cameraPosOld - cameraPos).sqrMagnitude > squareCameraMoveThreshold)
