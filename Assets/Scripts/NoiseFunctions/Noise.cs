@@ -13,8 +13,8 @@ public static class Noise
 
         for (int i = 0; i < octaves; i++)
         {
-            float offsetX = rnd.Next(-100000, 100000) + offset.x;
-            float offsetY = rnd.Next(-100000, 100000) - offset.y;
+            float offsetX = rnd.Next(-10000, 10000) + offset.x;
+            float offsetY = rnd.Next(-10000, 10000) - offset.y;
             octaveOffsets[i] = new Vector2(offsetX, offsetY);
             maxH += amplitude;
             amplitude *= persistance;

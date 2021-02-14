@@ -95,12 +95,12 @@ class LinearBased : Interpolation
         return result;
     }
 
-    public float Linear(float x, float y, float t)
+    private float Linear(float x, float y, float t)
     {
         return x + t * (y - x);
     }
 
-    private float Cosine(float x, float y, float t)
+    protected float Cosine(float x, float y, float t)
     {
         return Linear(x, y, (float)(-Mathf.Cos(Mathf.PI * t) / 2f + 0.5));
     }
@@ -108,11 +108,6 @@ class LinearBased : Interpolation
     private float Acceleration(float x, float y, float t)
     {
         return Linear(x, y, t * t);
-    }
-
-    private float Deceleration(float x, float y, float t)
-    {
-        return Linear(x, y, 1 - (1 - t) * (1 - t));
     }
 }
 

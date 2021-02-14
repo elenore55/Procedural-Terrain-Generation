@@ -10,10 +10,9 @@ public class InfiniteTerrain : MonoBehaviour
     public static float maxViewDist;
     public Material mapMaterial;
     public static Vector2 cameraPos;
-    public static float[,] erodedMap;
 
-    public static bool rains = false;
-    public static bool startedNow = true;
+    private static bool rains = false;
+    private static bool startedNow = true;
 
     Vector2 cameraPosOld;
     public static MapGenerator mapGenerator;
@@ -22,12 +21,14 @@ public class InfiniteTerrain : MonoBehaviour
     public Dictionary<Vector2, Tile> terrainTileDict = new Dictionary<Vector2, Tile>();
     public static List<Tile> tilesVisibleLastUpdate = new List<Tile>();
 
-    Slider lacunaritySlider;
-    Slider persistanceSlider;
-    Slider octavesSlider;
-    Slider scaleSlider;
-    Dropdown noiseChoice;
-    Dropdown interpChoice;
+    public static Dictionary<Vector2, float[,]> mapsToErode;
+
+    public Slider lacunaritySlider;
+    public Slider persistanceSlider;
+    public Slider octavesSlider;
+    public Slider scaleSlider;
+    public Dropdown noiseChoice;
+    public Dropdown interpChoice;
     int chosenInterp = 0;
 
     private void Awake()
@@ -39,6 +40,7 @@ public class InfiniteTerrain : MonoBehaviour
 
     private void Start()
     {
+        mapsToErode = new Dictionary<Vector2, float[,]>();
         maxViewDist = detailLevels[detailLevels.Length - 1].visibleDistThreshold;
         tileSize = MapGenerator.tileSize -1 ;
         tilesVisibleDist = Mathf.RoundToInt(maxViewDist / tileSize);
@@ -46,15 +48,6 @@ public class InfiniteTerrain : MonoBehaviour
     }
 
     private void SlidersInit()
-    {
-        lacunaritySlider = GameObject.Find("Lacunarity").GetComponent<Slider>();
-        persistanceSlider = GameObject.Find("Persistance").GetComponent<Slider>();
-        octavesSlider = GameObject.Find("Octaves").GetComponent<Slider>();
-        scaleSlider = GameObject.Find("Scale").GetComponent<Slider>();
-        AddSliderListeners();
-    }
-
-    private void AddSliderListeners()
     {
         // Azurira se pri generisanju novih blokova terena
         lacunaritySlider.onValueChanged.AddListener(delegate { UpdateLacunarity(); });
@@ -65,8 +58,6 @@ public class InfiniteTerrain : MonoBehaviour
 
     private void DropdownsInit()
     {
-        noiseChoice = GameObject.Find("Noises").GetComponent<Dropdown>();
-        interpChoice = GameObject.Find("Interps").GetComponent<Dropdown>();
         noiseChoice.onValueChanged.AddListener(delegate { UpdateNoise(); });
         interpChoice.onValueChanged.AddListener(delegate { UpdateInterp(); });
     }
@@ -104,6 +95,15 @@ public class InfiniteTerrain : MonoBehaviour
         mapGenerator.noiseFunc = cn;
     }
 
+    public static void SetRains(bool r) { rains = r; }
+
+    public static void ResetRainSettings()
+    {
+        rains = false;
+        startedNow = true;
+        mapsToErode.Clear();
+    }
+
     void Update()
     {
         if (rains)
@@ -112,12 +112,18 @@ public class InfiniteTerrain : MonoBehaviour
             int currentTileY = Mathf.RoundToInt(cameraPos.y / tileSize);
             if (startedNow)
             {
-                Vector2 viewedTileCoord = new Vector2(currentTileX, currentTileY);
-                viewedTileCoord *= tileSize;
-                erodedMap = mapGenerator.GenerateHeightMap(viewedTileCoord);
+                for (int i = -1; i <= 1; i++)
+                {
+                    for (int j = -1; j < 1; j++)
+                    {
+                        Vector2 tileCoord = new Vector2(currentTileX + i, currentTileY + j);
+                        mapsToErode[tileCoord] = mapGenerator.GenerateHeightMap(tileCoord * tileSize);
+                    }
+                }
                 startedNow = false;
             }
-            RegenerateTile(currentTileX, currentTileY, erodedMap);
+            foreach (Vector2 coords in mapsToErode.Keys)
+                RegenerateTile(coords, mapsToErode[coords]);
         }
         cameraPos = new Vector2(Camera.main.transform.position.x, Camera.main.transform.position.z) / mapGenerator.scale;
         if ((cameraPosOld - cameraPos).sqrMagnitude > squareCameraMoveThreshold)
@@ -127,15 +133,14 @@ public class InfiniteTerrain : MonoBehaviour
         }
     }
 
-    private void RegenerateTile(int coordX, int coordY, float[,] heightMap)
+    private void RegenerateTile(Vector2 coords, float[,] heightMap)
     {
-        Vector2 viewedTileCoord = new Vector2(coordX, coordY);
-        Tile t0 = terrainTileDict[viewedTileCoord];
+        Tile t0 = terrainTileDict[coords];
         t0.SetVisible(false);
-        terrainTileDict.Remove(viewedTileCoord);
-        Tile t = new Tile(viewedTileCoord, tileSize, detailLevels, transform, mapMaterial);
+        terrainTileDict.Remove(coords);
+        Tile t = new Tile(coords, tileSize, detailLevels, transform, mapMaterial);
         t.OnMapDataReceived(heightMap);
-        terrainTileDict[viewedTileCoord] = t;
+        terrainTileDict[coords] = t;
     }
 
     private void UpdateTiles()

@@ -57,29 +57,31 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 11344}
     - Class: 114
+      Script: {instanceID: 11414}
+    - Class: 114
       Script: {instanceID: 11416}
     - Class: 114
-      Script: {instanceID: 11418}
+      Script: {instanceID: 11454}
     - Class: 114
-      Script: {instanceID: 11456}
+      Script: {instanceID: 11480}
     - Class: 114
-      Script: {instanceID: 11482}
+      Script: {instanceID: 11730}
     - Class: 114
-      Script: {instanceID: 11732}
+      Script: {instanceID: 11756}
     - Class: 114
-      Script: {instanceID: 11758}
+      Script: {instanceID: 11782}
     - Class: 114
-      Script: {instanceID: 11784}
+      Script: {instanceID: 11846}
     - Class: 114
-      Script: {instanceID: 11848}
+      Script: {instanceID: 12040}
     - Class: 114
-      Script: {instanceID: 12042}
+      Script: {instanceID: 12236}
     - Class: 114
       Script: {instanceID: 12238}
     - Class: 114
-      Script: {instanceID: 12240}
+      Script: {instanceID: 12724}
     - Class: 114
-      Script: {instanceID: 12726}
+      Script: {instanceID: 12972}
     - Class: 114
       Script: {instanceID: 13066}
     - Class: 114
@@ -88,8 +90,6 @@ ScriptsOnlyBuild:
       Script: {instanceID: 13092}
     - Class: 114
       Script: {instanceID: 13108}
-    - Class: 114
-      Script: {instanceID: 40308}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -475,6 +475,12 @@ ScriptsOnlyBuild:
     className: TMP_StyleSheet
   - hash:
       serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: QuitGame
+  - hash:
+      serializedVersion: 2
       Hash: 8cd1cbba27f3cb1717254f668e9e0d5a
     assemblyName: Unity.TextMeshPro.dll
     namespaceName: TMPro
@@ -569,12 +575,6 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: PlayableTrack
-  - hash:
-      serializedVersion: 2
-      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: QuitGame
   platform: 5
   scenePathNames:
   - Assets/Scenes/SampleScene.unity

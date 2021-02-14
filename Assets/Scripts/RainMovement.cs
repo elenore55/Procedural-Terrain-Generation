@@ -38,7 +38,7 @@ public class RainMovement : MonoBehaviour
             CameraMovement.EnableMovement(false);
             btnRain.GetComponentInChildren<Text>().text = "Stop";
             btnRain.GetComponent<Image>().color = Color.red;
-            InfiniteTerrain.rains = true;
+            InfiniteTerrain.SetRains(true);
             numOfRaindrops = 0;
         }
         else
@@ -47,8 +47,7 @@ public class RainMovement : MonoBehaviour
             CameraMovement.EnableMovement(true);
             btnRain.GetComponentInChildren<Text>().text = "Rain";
             btnRain.GetComponent<Image>().color = new Color(0.13f, 0.37f, 0.765f);
-            InfiniteTerrain.rains = false;
-            InfiniteTerrain.startedNow = true;
+            InfiniteTerrain.ResetRainSettings();
             Debug.Log("Overall number of raindrops: " + numOfRaindrops);
         }
     }

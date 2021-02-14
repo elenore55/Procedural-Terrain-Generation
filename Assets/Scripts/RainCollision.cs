@@ -7,14 +7,14 @@ public class RainCollision : MonoBehaviour
 {
     ParticleSystem rainSystem;
     List<ParticleCollisionEvent> collisionEvents;
-    ParticleSystem.Particle[] droplets;
-    Slider gravitySlider;
-    Slider maxIterSlider;
-    Slider erosionSpeedSlider;
-    Slider evapSpeedSlider;
-    Slider depositSpeedSlider;
-    Slider radiusSlider;
-    Slider inertiaSlider;
+
+    public Slider gravitySlider;
+    public Slider maxIterSlider;
+    public Slider erosionSpeedSlider;
+    public Slider evapSpeedSlider;
+    public Slider depositSpeedSlider;
+    public Slider radiusSlider;
+    public Slider inertiaSlider;
 
     int RADIUS = 5;
     float INERTIA = 0.5f;
@@ -40,27 +40,12 @@ public class RainCollision : MonoBehaviour
     private void Start()
     {
         collisionEvents = new List<ParticleCollisionEvent>();
-        if (droplets == null || droplets.Length < rainSystem.main.maxParticles)
-            droplets = new ParticleSystem.Particle[rainSystem.main.maxParticles];
         radiusIndices = new Dictionary<Vector2Int, List<Vector2Int>>();
         radiusWeights = new Dictionary<Vector2Int, List<float>>();
         DetermineErosionRadiusIndices(InfiniteTerrain.tileSize);
     }
 
     private void SlidersInit()
-    {
-        gravitySlider = GameObject.Find("Gravity").GetComponent<Slider>();
-        maxIterSlider = GameObject.Find("LifeSpan").GetComponent<Slider>();
-        erosionSpeedSlider = GameObject.Find("ErosionSpeed").GetComponent<Slider>();
-        evapSpeedSlider = GameObject.Find("EvapSpeed").GetComponent<Slider>();
-        depositSpeedSlider = GameObject.Find("DepositSpeed").GetComponent<Slider>();
-        radiusSlider = GameObject.Find("Radius").GetComponent<Slider>();
-        inertiaSlider = GameObject.Find("Inertia").GetComponent<Slider>();
-        AddSliderListeners();
-        
-    }
-
-    private void AddSliderListeners()
     {
         gravitySlider.onValueChanged.AddListener(delegate { UpdateGravity(); });
         maxIterSlider.onValueChanged.AddListener(delegate { UpdateLifeSpan(); });
@@ -69,6 +54,7 @@ public class RainCollision : MonoBehaviour
         depositSpeedSlider.onValueChanged.AddListener(delegate { UpdateDepositSpeed(); });
         radiusSlider.onValueChanged.AddListener(delegate { UpdateRadius(); });
         inertiaSlider.onValueChanged.AddListener(delegate { UpdateInertia(); });
+
     }
 
     private void UpdateGravity() { GRAVITY = gravitySlider.value; }
@@ -94,6 +80,10 @@ public class RainCollision : MonoBehaviour
         for (int i = 0; i < numCollisionEvents; i++)
         {
             Vector3 worldPos = collisionEvents[i].intersection;
+            Vector2 tileCoords = GetTileCoords(worldPos, sz);
+            if (!InfiniteTerrain.mapsToErode.ContainsKey(tileCoords))
+                continue;
+            float[,] mapToErode = InfiniteTerrain.mapsToErode[tileCoords];
             Vector2 dropletPos = GetOnMapPosition(worldPos, sz);
             if (IsBorderPosition(dropletPos, sz))
                 continue;
@@ -107,16 +97,15 @@ public class RainCollision : MonoBehaviour
                 int iY = (int)dropletPos.y;
                 float u = dropletPos.x - iX; 
                 float v = dropletPos.y - iY;
-
-                Vector2 grad = CalculateGradient(dropletPos, InfiniteTerrain.erodedMap);
-                float height = CalculateHeight(dropletPos, InfiniteTerrain.erodedMap);
+                Vector2 grad = CalculateGradient(dropletPos, mapToErode);
+                float height = CalculateHeight(dropletPos, mapToErode);
                 dir = dir * INERTIA - grad * (1 - INERTIA); 
                 dir.Normalize();
                 dropletPos += dir;
                 if (!InRange(dropletPos, sz))
                     break;
 
-                float heightNew = CalculateHeight(dropletPos, InfiniteTerrain.erodedMap);
+                float heightNew = CalculateHeight(dropletPos, mapToErode);
                 deltaH = heightNew - height;
 
                 float sedimentCapacity = Mathf.Max(-deltaH * speed * water * SEDIMENT_CAPACITY, MIN_SEDIMENT_CAPACITY);
@@ -126,10 +115,10 @@ public class RainCollision : MonoBehaviour
                     if (deltaH > 0) depositAmount = Mathf.Min(deltaH, sediment);
                     else depositAmount = (sediment - sedimentCapacity) * DEPOSIT_SPEED;
                     sediment -= depositAmount;
-                    InfiniteTerrain.erodedMap[iX, iY] += depositAmount * (1 - u) * (1 - v);
-                    InfiniteTerrain.erodedMap[iX + 1, iY] += depositAmount * u * (1 - v);
-                    InfiniteTerrain.erodedMap[iX, iY + 1] += depositAmount * (1 - u) * v;
-                    InfiniteTerrain.erodedMap[iX + 1, iY + 1] += depositAmount * u * v;
+                    mapToErode[iX, iY] += depositAmount * (1 - u) * (1 - v);
+                    mapToErode[iX + 1, iY] += depositAmount * u * (1 - v);
+                    mapToErode[iX, iY + 1] += depositAmount * (1 - u) * v;
+                    mapToErode[iX + 1, iY + 1] += depositAmount * u * v;
                     if (deltaH > 0)
                         break;
                 }
@@ -145,13 +134,14 @@ public class RainCollision : MonoBehaviour
                         int X = nodeIndicesList[k].x;
                         int Y = nodeIndicesList[k].y;
                         float deltaSediment;
-                        if (InfiniteTerrain.erodedMap[X, Y] < weighedErosionAmt)
-                            deltaSediment = InfiniteTerrain.erodedMap[X, Y];
+                        if (mapToErode[X, Y] < weighedErosionAmt)
+                            deltaSediment = mapToErode[X, Y];
                         else deltaSediment = weighedErosionAmt;
-                        InfiniteTerrain.erodedMap[X, Y] -= deltaSediment;
+                        mapToErode[X, Y] -= deltaSediment;
                         sediment += deltaSediment;
                     }
                 }
+                InfiniteTerrain.mapsToErode[tileCoords] = mapToErode;
             }
             water *= (1 - EVAPORATION_SPEED);
             speed = Mathf.Sqrt(Mathf.Pow(speed, 2) + deltaH * GRAVITY);
@@ -167,6 +157,14 @@ public class RainCollision : MonoBehaviour
         float u = worldPos.x - (int)worldPos.x;
         float v = worldPos.z - (int)worldPos.z;
         return new Vector2(x + u, y + v);
+    }
+
+    private Vector2 GetTileCoords(Vector3 worldPos, int mapSize)
+    {
+        worldPos /= InfiniteTerrain.mapGenerator.scale;
+        int coordX = Mathf.RoundToInt(worldPos.x / mapSize);
+        int coordY = Mathf.RoundToInt(worldPos.z / mapSize);
+        return new Vector2(coordX, coordY);
     }
 
     private Vector2 CalculateGradient(Vector2 pos, float[,] heightMap)

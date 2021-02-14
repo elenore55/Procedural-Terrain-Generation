@@ -2,20 +2,21 @@
 
 public class CameraMovement : MonoBehaviour
 {
-    float movementSpeed = 100.0f;
+    float movementSpeed = 85.0f;
     float rotationSpeed = 2f;
     const int MIN_CAMERA_HEIGHT = 50;
     const int MAX_CAMERA_HEIGHT = 200;
     static bool movementEnabled = true;
     bool rotationEnabled = false;
+    public float maxRotationAngle = 80f;
+    private Vector2 rotation;
 
     public static void EnableMovement(bool enabled) { movementEnabled = enabled; }
-
 
     void Update()
     {   
         MoveCamera();
-        RotateCamera();
+        Rotate();
         if (Input.GetKey(KeyCode.L))
             rotationEnabled = !rotationEnabled;
     }
@@ -47,6 +48,18 @@ public class CameraMovement : MonoBehaviour
         {
             Camera.main.transform.Rotate(0, Input.GetAxis("Mouse X") * rotationSpeed, 0);
             Camera.main.transform.Rotate(-Input.GetAxis("Mouse Y") * rotationSpeed, 0, 0);
+        }
+    }
+
+    void Rotate()
+    {
+        if (rotationEnabled)
+        {
+            rotation.x += Input.GetAxis("Mouse X") * rotationSpeed;
+            rotation.y -= Input.GetAxis("Mouse Y") * rotationSpeed;
+            rotation.x = Mathf.Repeat(rotation.x, 360);
+            rotation.y = Mathf.Clamp(rotation.y, -maxRotationAngle, maxRotationAngle);
+            Camera.main.transform.rotation = Quaternion.Euler(rotation.y, rotation.x, 0);
         }
     }
 }

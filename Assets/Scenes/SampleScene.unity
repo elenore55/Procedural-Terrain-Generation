@@ -935,7 +935,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_Color: {r: 0.9528302, g: 0.95262533, b: 0.8539516, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -944,7 +944,7 @@ MonoBehaviour:
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
     m_FontSize: 20
-    m_FontStyle: 0
+    m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 2
     m_MaxSize: 40
@@ -4805,6 +4805,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ff027e023b0b00418d25968816e1b9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxRotationAngle: 80
 --- !u!114 &963194230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4937,13 +4938,19 @@ MonoBehaviour:
   - LOD: 0
     visibleDistThreshold: 150
     useForCollider: 1
-  - LOD: 1
-    visibleDistThreshold: 250
+  - LOD: 2
+    visibleDistThreshold: 300
     useForCollider: 0
   - LOD: 3
-    visibleDistThreshold: 400
+    visibleDistThreshold: 450
     useForCollider: 0
   mapMaterial: {fileID: 2100000, guid: 6f8ce5e5fbf72494ebad718d8d231280, type: 2}
+  lacunaritySlider: {fileID: 1808210284}
+  persistanceSlider: {fileID: 459768385}
+  octavesSlider: {fileID: 723707275}
+  scaleSlider: {fileID: 1653711273}
+  noiseChoice: {fileID: 1010366493}
+  interpChoice: {fileID: 1775591019}
 --- !u!1 &1010366491
 GameObject:
   m_ObjectHideFlags: 0
@@ -10104,6 +10111,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4420f4466d970c428079369f49a6b3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gravitySlider: {fileID: 2122825044}
+  maxIterSlider: {fileID: 923932108}
+  erosionSpeedSlider: {fileID: 65940236}
+  evapSpeedSlider: {fileID: 803735756}
+  depositSpeedSlider: {fileID: 1404491559}
+  radiusSlider: {fileID: 514222996}
+  inertiaSlider: {fileID: 315814984}
 --- !u!114 &1138873949
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13459,7 +13473,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 900, y: 500}
-  m_SizeDelta: {x: 70, y: 30}
+  m_SizeDelta: {x: 86, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1915983859
 MonoBehaviour:
@@ -13528,7 +13542,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.14102882, g: 0.14150941, b: 0.12949446, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
