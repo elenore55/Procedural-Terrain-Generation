@@ -130,6 +130,8 @@ public class RainCollision : MonoBehaviour
                     InfiniteTerrain.erodedMap[iX + 1, iY] += depositAmount * u * (1 - v);
                     InfiniteTerrain.erodedMap[iX, iY + 1] += depositAmount * (1 - u) * v;
                     InfiniteTerrain.erodedMap[iX + 1, iY + 1] += depositAmount * u * v;
+                    if (deltaH > 0)
+                        break;
                 }
                 else
                 {

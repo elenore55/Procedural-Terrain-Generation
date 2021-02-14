@@ -39,7 +39,6 @@ public class RainMovement : MonoBehaviour
             btnRain.GetComponentInChildren<Text>().text = "Stop";
             btnRain.GetComponent<Image>().color = Color.red;
             InfiniteTerrain.rains = true;
-            // RainCollision.Initialize(InfiniteTerrain.tileSize);
             numOfRaindrops = 0;
         }
         else

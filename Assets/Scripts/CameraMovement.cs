@@ -5,6 +5,7 @@ public class CameraMovement : MonoBehaviour
     float movementSpeed = 100.0f;
     float rotationSpeed = 2f;
     const int MIN_CAMERA_HEIGHT = 50;
+    const int MAX_CAMERA_HEIGHT = 200;
     static bool movementEnabled = true;
     bool rotationEnabled = false;
 
@@ -32,7 +33,8 @@ public class CameraMovement : MonoBehaviour
             if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
                 transform.Translate(new Vector3(0, 0, movementSpeed * Time.deltaTime));
             if (Input.GetKey(KeyCode.Space))
-                transform.Translate(new Vector3(0, movementSpeed * Time.deltaTime), 0);
+                if (transform.position.y < MAX_CAMERA_HEIGHT)
+                    transform.Translate(new Vector3(0, movementSpeed * Time.deltaTime), 0);
             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
                 if (transform.position.y > MIN_CAMERA_HEIGHT)
                     transform.Translate(new Vector3(0, -movementSpeed * Time.deltaTime), 0);

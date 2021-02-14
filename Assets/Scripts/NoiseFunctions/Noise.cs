@@ -41,8 +41,8 @@ public static class Noise
         }
         for (int y = 0; y < mapSize; y++) { 
             for (int x = 0; x < mapSize; x++) {
-                float normalizedHeight = (heightMap[x, y] + 1f) / (maxH / 0.85f);
-                heightMap[x, y] = Mathf.Clamp01(normalizedHeight);
+                float hNorm = (heightMap[x, y] + 1f) / (maxH / 0.85f);
+                heightMap[x, y] = Mathf.Clamp01(hNorm);
             }
         }
         return heightMap;

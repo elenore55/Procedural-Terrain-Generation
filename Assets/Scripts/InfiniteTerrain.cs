@@ -90,9 +90,6 @@ public class InfiniteTerrain : MonoBehaviour
             case (int)NoiseIndices.Custom:
                 mapGenerator.noiseFunc = new CustomNoise(chosenInterp);
                 break;
-            case (int)NoiseIndices.Cubic:
-                mapGenerator.noiseFunc = new CubicNoise();
-                break;
             default:
                 mapGenerator.noiseFunc = new PerlinNoiseFunction();
                 break;
