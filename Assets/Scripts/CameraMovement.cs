@@ -14,11 +14,11 @@ public class CameraMovement : MonoBehaviour
     public static void EnableMovement(bool enabled) { movementEnabled = enabled; }
 
     void Update()
-    {   
-        MoveCamera();
-        Rotate();
-        if (Input.GetKey(KeyCode.L))
+    {
+        if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
             rotationEnabled = !rotationEnabled;
+        MoveCamera();
+        RotateCamera();
     }
 
     void MoveCamera()
@@ -43,15 +43,6 @@ public class CameraMovement : MonoBehaviour
     }
 
     void RotateCamera()
-    {
-        if (rotationEnabled)
-        {
-            Camera.main.transform.Rotate(0, Input.GetAxis("Mouse X") * rotationSpeed, 0);
-            Camera.main.transform.Rotate(-Input.GetAxis("Mouse Y") * rotationSpeed, 0, 0);
-        }
-    }
-
-    void Rotate()
     {
         if (rotationEnabled)
         {

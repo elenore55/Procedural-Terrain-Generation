@@ -141,7 +141,7 @@ public class RainCollision : MonoBehaviour
                         sediment += deltaSediment;
                     }
                 }
-                InfiniteTerrain.mapsToErode[tileCoords] = mapToErode;
+                InfiniteTerrain.SetChangedEntry(tileCoords, mapToErode);
             }
             water *= (1 - EVAPORATION_SPEED);
             speed = Mathf.Sqrt(Mathf.Pow(speed, 2) + deltaH * GRAVITY);

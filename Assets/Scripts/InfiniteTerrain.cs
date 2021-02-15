@@ -11,6 +11,8 @@ public class InfiniteTerrain : MonoBehaviour
     public Material mapMaterial;
     public static Vector2 cameraPos;
 
+    public static Vector2 changedKey = new Vector2(int.MaxValue, int.MaxValue);
+
     private static bool rains = false;
     private static bool startedNow = true;
 
@@ -29,13 +31,13 @@ public class InfiniteTerrain : MonoBehaviour
     public Slider scaleSlider;
     public Dropdown noiseChoice;
     public Dropdown interpChoice;
+    public Button regenerateBtn;
     int chosenInterp = 0;
 
     private void Awake()
     {
         mapGenerator = FindObjectOfType<MapGenerator>();
-        SlidersInit();
-        DropdownsInit();
+        UIComponentsInit();
     }
 
     private void Start()
@@ -47,19 +49,16 @@ public class InfiniteTerrain : MonoBehaviour
         UpdateTiles();
     }
 
-    private void SlidersInit()
+    private void UIComponentsInit()
     {
         // Azurira se pri generisanju novih blokova terena
         lacunaritySlider.onValueChanged.AddListener(delegate { UpdateLacunarity(); });
         persistanceSlider.onValueChanged.AddListener(delegate { UpdatePersistance(); });
         octavesSlider.onValueChanged.AddListener(delegate { UpdateOctaves(); });
         scaleSlider.onValueChanged.AddListener(delegate { UpdateScale(); });
-    }
-
-    private void DropdownsInit()
-    {
         noiseChoice.onValueChanged.AddListener(delegate { UpdateNoise(); });
         interpChoice.onValueChanged.AddListener(delegate { UpdateInterp(); });
+        regenerateBtn.onClick.AddListener(delegate { RegenerateCurrentTile(); });
     }
 
     private void UpdateLacunarity() { mapGenerator.lacunarity = lacunaritySlider.value; }
@@ -95,6 +94,15 @@ public class InfiniteTerrain : MonoBehaviour
         mapGenerator.noiseFunc = cn;
     }
 
+    private void RegenerateCurrentTile()
+    {
+        int currentTileX = Mathf.RoundToInt(cameraPos.x / tileSize);
+        int currentTileY = Mathf.RoundToInt(cameraPos.y / tileSize);
+        Vector2 tileCoord = new Vector2(currentTileX, currentTileY);
+        float[,] m = mapGenerator.GenerateHeightMap(tileCoord * tileSize);
+        RegenerateTile(tileCoord, m);
+    }
+
     public static void SetRains(bool r) { rains = r; }
 
     public static void ResetRainSettings()
@@ -112,18 +120,20 @@ public class InfiniteTerrain : MonoBehaviour
             int currentTileY = Mathf.RoundToInt(cameraPos.y / tileSize);
             if (startedNow)
             {
+                Vector2 tileCoord;
                 for (int i = -1; i <= 1; i++)
                 {
-                    for (int j = -1; j < 1; j++)
+                    for (int j = -1; j <= 1; j++)
                     {
-                        Vector2 tileCoord = new Vector2(currentTileX + i, currentTileY + j);
+                        tileCoord = new Vector2(currentTileX + i, currentTileY + j);
                         mapsToErode[tileCoord] = mapGenerator.GenerateHeightMap(tileCoord * tileSize);
                     }
                 }
                 startedNow = false;
             }
-            foreach (Vector2 coords in mapsToErode.Keys)
-                RegenerateTile(coords, mapsToErode[coords]);
+
+            if (mapsToErode.ContainsKey(changedKey))
+                RegenerateTile(changedKey, mapsToErode[changedKey]);
         }
         cameraPos = new Vector2(Camera.main.transform.position.x, Camera.main.transform.position.z) / mapGenerator.scale;
         if ((cameraPosOld - cameraPos).sqrMagnitude > squareCameraMoveThreshold)
@@ -131,6 +141,12 @@ public class InfiniteTerrain : MonoBehaviour
             cameraPosOld = cameraPos;
             UpdateTiles();
         }
+    }
+
+    public static void SetChangedEntry(Vector2 tileCoords, float[,] changedMap)
+    {
+        changedKey = tileCoords;
+        mapsToErode[tileCoords] = changedMap;
     }
 
     private void RegenerateTile(Vector2 coords, float[,] heightMap)
@@ -161,10 +177,8 @@ public class InfiniteTerrain : MonoBehaviour
                 {
                     Tile t = new Tile(viewedTileCoord, tileSize, detailLevels, transform, mapMaterial);
                     terrainTileDict.Add(viewedTileCoord, t);
-                }
-                    
+                }                    
             }
         }
     }
-
 }

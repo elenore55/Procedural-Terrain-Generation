@@ -145,7 +145,7 @@ ScriptsOnlyBuild:
     className: MapGenerator
   - hash:
       serializedVersion: 2
-      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+      Hash: c04d4782e8dafd6b366f246298f03578
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: CameraMovement
@@ -283,7 +283,7 @@ ScriptsOnlyBuild:
     className: AnimationPlayableAsset
   - hash:
       serializedVersion: 2
-      Hash: a3fe6e05a3ee55f8130c19679ce4a707
+      Hash: b9a86c186200e97160a3ccad4ede2a2e
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: InfiniteTerrain
@@ -301,7 +301,7 @@ ScriptsOnlyBuild:
     className: Shadow
   - hash:
       serializedVersion: 2
-      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+      Hash: 5c883680502ab664b1fcb772a4e3e9a2
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: RainCollision
