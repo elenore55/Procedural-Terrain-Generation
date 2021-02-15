@@ -7,7 +7,7 @@ public class CameraMovement : MonoBehaviour
     const int MIN_CAMERA_HEIGHT = 50;
     const int MAX_CAMERA_HEIGHT = 200;
     static bool movementEnabled = true;
-    bool rotationEnabled = false;
+    bool rotationEnabled = true;
     public float maxRotationAngle = 80f;
     private Vector2 rotation;
 

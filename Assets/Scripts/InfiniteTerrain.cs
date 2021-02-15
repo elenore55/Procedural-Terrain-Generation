@@ -31,7 +31,6 @@ public class InfiniteTerrain : MonoBehaviour
     public Slider scaleSlider;
     public Dropdown noiseChoice;
     public Dropdown interpChoice;
-    public Button regenerateBtn;
     int chosenInterp = 0;
 
     private void Awake()
@@ -58,7 +57,6 @@ public class InfiniteTerrain : MonoBehaviour
         scaleSlider.onValueChanged.AddListener(delegate { UpdateScale(); });
         noiseChoice.onValueChanged.AddListener(delegate { UpdateNoise(); });
         interpChoice.onValueChanged.AddListener(delegate { UpdateInterp(); });
-        regenerateBtn.onClick.AddListener(delegate { RegenerateCurrentTile(); });
     }
 
     private void UpdateLacunarity() { mapGenerator.lacunarity = lacunaritySlider.value; }
@@ -88,19 +86,18 @@ public class InfiniteTerrain : MonoBehaviour
 
     private void UpdateInterp()
     {
-        noiseChoice.SetValueWithoutNotify((int)NoiseIndices.Custom);
-        chosenInterp = interpChoice.value;
-        CustomNoise cn = new CustomNoise(chosenInterp);
-        mapGenerator.noiseFunc = cn;
-    }
-
-    private void RegenerateCurrentTile()
-    {
-        int currentTileX = Mathf.RoundToInt(cameraPos.x / tileSize);
-        int currentTileY = Mathf.RoundToInt(cameraPos.y / tileSize);
-        Vector2 tileCoord = new Vector2(currentTileX, currentTileY);
-        float[,] m = mapGenerator.GenerateHeightMap(tileCoord * tileSize);
-        RegenerateTile(tileCoord, m);
+        if (interpChoice.value == (int)InterpIndices.None)
+        {
+            mapGenerator.noiseFunc = new PerlinNoiseFunction();
+            noiseChoice.SetValueWithoutNotify((int)NoiseIndices.Perlin);
+        }
+        else
+        {
+            noiseChoice.SetValueWithoutNotify((int)NoiseIndices.Custom);
+            chosenInterp = interpChoice.value;
+            CustomNoise cn = new CustomNoise(chosenInterp);
+            mapGenerator.noiseFunc = cn;
+        }
     }
 
     public static void SetRains(bool r) { rains = r; }
@@ -126,12 +123,12 @@ public class InfiniteTerrain : MonoBehaviour
                     for (int j = -1; j <= 1; j++)
                     {
                         tileCoord = new Vector2(currentTileX + i, currentTileY + j);
-                        mapsToErode[tileCoord] = mapGenerator.GenerateHeightMap(tileCoord * tileSize);
+                        float[,] map = mapGenerator.GenerateHeightMap(tileCoord * tileSize);
+                        mapsToErode[tileCoord] = map;
                     }
                 }
                 startedNow = false;
             }
-
             if (mapsToErode.ContainsKey(changedKey))
                 RegenerateTile(changedKey, mapsToErode[changedKey]);
         }

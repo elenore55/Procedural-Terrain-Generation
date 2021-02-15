@@ -7,9 +7,10 @@
 
 public enum InterpIndices
 {
-    Cosine = 0,
-    Acceleration = 1,
-    Linear = 2,
-    Quadratic = 3,
-    Cubic = 4
+    None = 0,
+    Cosine = 1,
+    Acceleration = 2,
+    Linear = 3,
+    Quadratic = 4,
+    Cubic = 5
 }
