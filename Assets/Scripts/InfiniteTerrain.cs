@@ -43,7 +43,7 @@ public class InfiniteTerrain : MonoBehaviour
     {
         mapsToErode = new Dictionary<Vector2, float[,]>();
         maxViewDist = detailLevels[detailLevels.Length - 1].visibleDistThreshold;
-        tileSize = MapGenerator.tileSize -1 ;
+        tileSize = MapGenerator.tileSize - 1;
         tilesVisibleDist = Mathf.RoundToInt(maxViewDist / tileSize);
         UpdateTiles();
     }
@@ -71,9 +71,11 @@ public class InfiniteTerrain : MonoBehaviour
         {
             case (int)NoiseIndices.Perlin:
                 mapGenerator.noiseFunc = new PerlinNoiseFunction();
+                interpChoice.SetValueWithoutNotify((int)InterpIndices.None);
                 break;
             case (int)NoiseIndices.OpenSimplex:
                 mapGenerator.noiseFunc = new OpenSimplexNoise();
+                interpChoice.SetValueWithoutNotify((int)InterpIndices.None);
                 break;
             case (int)NoiseIndices.Custom:
                 mapGenerator.noiseFunc = new CustomNoise(chosenInterp);
@@ -174,7 +176,7 @@ public class InfiniteTerrain : MonoBehaviour
                 {
                     Tile t = new Tile(viewedTileCoord, tileSize, detailLevels, transform, mapMaterial);
                     terrainTileDict.Add(viewedTileCoord, t);
-                }                    
+                }
             }
         }
     }

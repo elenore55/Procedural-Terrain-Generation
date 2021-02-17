@@ -76,7 +76,7 @@ public class RainCollision : MonoBehaviour
         int numCollisionEvents = rainSystem.GetCollisionEvents(other, collisionEvents);
         RainMovement.IncreaseNumOfRaindrops(numCollisionEvents);
         int sz = InfiniteTerrain.tileSize;
-        float deltaH = 0.01f;
+        float deltaH = 0.0001f;
         for (int i = 0; i < numCollisionEvents; i++)
         {
             Vector3 worldPos = collisionEvents[i].intersection;
@@ -95,11 +95,11 @@ public class RainCollision : MonoBehaviour
             {
                 int iX = (int)dropletPos.x;
                 int iY = (int)dropletPos.y;
-                float u = dropletPos.x - iX; 
+                float u = dropletPos.x - iX;
                 float v = dropletPos.y - iY;
                 Vector2 grad = CalculateGradient(dropletPos, mapToErode);
                 float height = CalculateHeight(dropletPos, mapToErode);
-                dir = dir * INERTIA - grad * (1 - INERTIA); 
+                dir = dir * INERTIA - grad * (1 - INERTIA);
                 dir.Normalize();
                 dropletPos += dir;
                 if (!InRange(dropletPos, sz))
@@ -150,6 +150,9 @@ public class RainCollision : MonoBehaviour
 
     private Vector2 GetOnMapPosition(Vector3 worldPos, int mapSize)
     {
+        worldPos /= InfiniteTerrain.mapGenerator.scale;
+        worldPos.x -= mapSize / 2f;
+        worldPos.z -= mapSize / 2f;
         int x = (int)worldPos.x % mapSize;
         int y = (int)worldPos.z % mapSize;
         if (x < 0) x += mapSize;
@@ -216,14 +219,13 @@ public class RainCollision : MonoBehaviour
                 {
                     for (int x = -RADIUS + 1; x < RADIUS; x++)
                     {
-                        float distance = x * x + y * y;
-                        if (distance < RADIUS * RADIUS)
+                        if (x * x + y * y < RADIUS * RADIUS)
                         {
                             Vector2Int currentNode = new Vector2Int(column + x, row + y);
                             if (InRange(currentNode, mapSize))
                             {
                                 radiusIndices[key].Add(currentNode);
-                                float weight = Mathf.Abs(RADIUS - (key - currentNode).magnitude);
+                                float weight = Mathf.Max(0.000001f, RADIUS - (key - currentNode).magnitude);
                                 weightSum += weight;
                                 weightsTemp.Add(weight);
                             }
@@ -249,7 +251,7 @@ public class RainCollision : MonoBehaviour
 }
 
 class CellHeights
-{ 
+{
     float height00;
     float height10;
     float height01;
